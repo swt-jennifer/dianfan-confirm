@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>典範需求確認單</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 窄頁首 → 左側目錄（寬螢幕）＋ 主欄；每一區＝左「確認項目」右「畫面示意」，窄螢幕上下排 */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#1d2a36; --muted:#5d6b78; --line:#dde3e9;
+  --navy:#2c4257; --navy-ink:#e8eef4; --accent:#2f6f8f; --accent-soft:#e3eff5;
+  --ok:#2e7d4f; --ok-soft:#e2f3e9; --chg:#b0641a; --chg-soft:#fbeedd; --bad:#b3372f; --bad-soft:#f9e3e1;
+  --mock:#f7f9fb;
+  --f-body:"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141a20; --panel:#1c242c; --ink:#e4eaf0; --muted:#9aa8b5; --line:#2e3a45;
+  --navy:#22303d; --navy-ink:#dfe7ee; --accent:#6fb3d3; --accent-soft:#1f3442;
+  --ok:#6fcf97; --ok-soft:#1d3528; --chg:#f0a85a; --chg-soft:#3a2c1b; --bad:#f08a80; --bad-soft:#3a2120;
+  --mock:#182027; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a20; --panel:#1c242c; --ink:#e4eaf0; --muted:#9aa8b5; --line:#2e3a45;
+  --navy:#22303d; --navy-ink:#dfe7ee; --accent:#6fb3d3; --accent-soft:#1f3442;
+  --ok:#6fcf97; --ok-soft:#1d3528; --chg:#f0a85a; --chg-soft:#3a2c1b; --bad:#f08a80; --bad-soft:#3a2120;
+  --mock:#182027; color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;margin:0}
+.wrap{max-width:1240px;margin:0 auto;padding-block:20px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;margin:0}
+.head{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;padding-bottom:16px;border-bottom:2px solid var(--navy)}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted)}
+h1{font-size:26px;line-height:1.3}
+.howto{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px;display:grid;gap:6px}
+.howto ol{margin:0;padding-left:1.3em}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:0}
+textarea{width:100%;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;margin-top:20px}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);align-self:start;display:grid;gap:4px}
+.toc a{color:var(--ink);text-decoration:none;padding:6px 10px;border-radius:6px;font-size:14px;display:flex;justify-content:space-between;gap:6px}
+.toc a:hover{background:var(--accent-soft)}
+.toc .cnt{font-family:var(--f-num);font-size:12px;color:var(--muted)}
+.toc .prog{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:13px}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--ok)}
+section.sec{scroll-margin-top:16px;margin-bottom:34px}
+.sec-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:10px}
+.sec-h h2{font-size:20px}
+.sec-h .tag{font-size:12px;color:var(--muted)}
+.sec-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:18px;align-items:start}
+.sec-body.solo{grid-template-columns:minmax(0,1fr)}
+.items{display:grid;gap:10px}
+.item{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:8px}
+.item.ok{border-left-color:var(--ok)}
+.item.chg{border-left-color:var(--chg)}
+.item .row1{display:flex;gap:10px;align-items:flex-start}
+.item .no{font-family:var(--f-num);font-size:13px;color:var(--muted);padding-top:2px;flex:none;width:2.2em}
+.item .txt{flex:1;min-width:0}
+.item .orig{font-size:13px;color:var(--muted);text-decoration:line-through}
+.item .edited{font-size:12px;color:var(--chg);font-weight:500}
+.acts{display:flex;flex-wrap:wrap;gap:6px;padding-left:calc(2.2em + 10px)}
+.acts button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:3px 12px;font-size:13px}
+.acts button[aria-pressed="true"].b-ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:700}
+.acts button[aria-pressed="true"].b-chg{background:var(--chg-soft);border-color:var(--chg);color:var(--chg);font-weight:700}
+.acts .b-edit{color:var(--accent)}
+.more{padding-left:calc(2.2em + 10px);display:grid;gap:6px}
+.more label{font-size:12px;color:var(--muted)}
+/* mock */
+.mock{background:var(--mock);border:1px dashed var(--muted);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.mock-cap{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.mock-cap b{color:var(--accent);font-weight:500}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px}
+.form .full{grid-column:1/-1}
+.f{display:grid;gap:3px;min-width:0}
+.f span{font-size:12px;color:var(--muted)}
+.f input,.f select{width:100%}
+.new{background:var(--accent-soft);border-radius:6px;padding:4px 6px;margin:-4px -6px}
+.new span::after{content:"  新增";color:var(--accent);font-weight:700}
+.changed span::after{content:"  改";color:var(--chg);font-weight:700}
+.caseno{background:var(--panel);border:1px solid var(--accent);border-radius:8px;padding:10px 12px}
+.caseno .lbl{font-size:12px;color:var(--muted)}
+.caseno .val{font-family:var(--f-num);font-size:17px;word-break:break-all}
+.caseno .val em{font-style:normal;color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+@media (max-width:760px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 4px;text-align:center;font-size:12px}
+.stat b{display:block;font-size:18px;font-family:var(--f-num)}
+.stat.gone{opacity:.55;text-decoration:line-through;border-style:dashed}
+.btn{border:0;background:var(--navy);color:var(--navy-ink);border-radius:6px;padding:6px 12px;font-size:13px}
+.btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.menu{background:var(--navy);color:var(--navy-ink);border-radius:8px;padding:8px;display:grid;gap:2px;font-size:13px;max-width:240px}
+.menu div{padding:5px 10px;border-radius:5px;opacity:.85}
+.menu .hl{background:var(--accent);opacity:1;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:3px 10px;font-size:12px}
+.chip[aria-pressed="true"]{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:500;background:var(--mock)}
+td.n,th.n{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums}
+td.wrapc{white-space:normal;min-width:140px}
+tr.click{cursor:pointer}
+tr.click:hover td,tr.sel td{background:var(--accent-soft)}
+.pill{display:inline-block;border-radius:999px;padding:0 8px;font-size:12px;line-height:20px}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.p-warn{background:var(--chg-soft);color:var(--chg)}
+.p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-mute{background:var(--line);color:var(--muted)}
+.hbar{width:90px;height:7px;border-radius:4px;background:var(--line);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
+.hbar i{display:block;height:100%;background:var(--accent)}
+.hbar i.over{background:var(--bad)}
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px}
+.dh{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+.dh h3{font-size:16px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tile{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.tile .k{font-size:12px;color:var(--muted)}
+.tile .v{font-family:var(--f-num);font-size:18px;font-variant-numeric:tabular-nums}
+.tile .v.neg{color:var(--bad)}
+.subh{font-size:13px;font-weight:700;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.note-s{font-size:12px;color:var(--muted)}
+.later{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.final{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.final .btns{display:flex;flex-wrap:wrap;gap:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--navy);color:var(--navy-ink);padding:8px 16px;border-radius:8px;font-size:14px;z-index:20;max-width:90vw}
+pre.out{white-space:pre-wrap;background:var(--mock);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:13px;max-height:300px;overflow:auto}
+@media (max-width:980px){.sec-body{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .toc{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .toc .prog{grid-column:1/-1}
+  .form{grid-template-columns:minmax(0,1fr)}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <div class="eyebrow">AID LEGAL ｜ 2026-11-19 需求確認會議</div>
+      <h1>典範法律事務所 需求確認單</h1>
+    </div>
+    <div class="note-s">整理：SWT 逆轉科技</div>
+  </header>
+
+  <div class="howto">
+    <div><b>怎麼填</b>（大約 10 分鐘）</div>
+    <ol>
+      <li>每一項看過後，按「<b>沒問題</b>」或「<b>要修改</b>」。</li>
+      <li>要修改的話，可以直接按「改寫這一項」改文字，或在意見欄寫下想法。</li>
+      <li>右邊的「畫面示意」是幫助理解用的草圖，可以點點看；<b>裡面的公司和數字都是範例</b>，不是真實資料。</li>
+      <li>全部看完後，到最下面按「下載回覆檔」或「複製回覆內容」，再傳給我們。</li>
+    </ol>
+    <div class="who"><label for="who">填寫人：</label><input id="who" placeholder="例：蘇律師" style="width:180px"></div>
+  </div>
+
+  <div class="layout">
+    <nav class="toc" id="toc" aria-label="目錄"></nav>
+    <main id="main"></main>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const ROC = 115; // 2026 = 民國 115 年
+const COURTS = ["憲法法庭","司法院刑事補償法庭","司法院－訴願決定","最高法院","最高行政法院","懲戒法院－懲戒法庭","懲戒法院－職務法庭","臺灣高等法院","臺灣高等法院－訴願決定","臺北高等行政法院 高等庭","臺北高等行政法院 地方庭","臺中高等行政法院 高等庭","臺中高等行政法院 地方庭","高雄高等行政法院 高等庭","高雄高等行政法院 地方庭","智慧財產及商業法院","臺灣高等法院 臺中分院","臺灣高等法院 臺南分院","臺灣高等法院 高雄分院","臺灣高等法院 花蓮分院","臺灣臺北地方法院","臺灣士林地方法院","臺灣新北地方法院","臺灣宜蘭地方法院","臺灣基隆地方法院","臺灣桃園地方法院","臺灣新竹地方法院","臺灣苗栗地方法院","臺灣臺中地方法院","臺灣彰化地方法院","臺灣南投地方法院","臺灣雲林地方法院","臺灣嘉義地方法院","臺灣臺南地方法院","臺灣高雄地方法院","臺灣橋頭地方法院","臺灣花蓮地方法院","臺灣臺東地方法院","臺灣屏東地方法院","臺灣澎湖地方法院","福建高等法院金門分院","福建金門地方法院","福建連江地方法院","臺灣高雄少年及家事法院"];
+
+const SECTIONS = [
+ {id:"case", title:"建立案件", tag:"案件中心 → 新建案件", mock:"mCase", items:[
+  ["a1","「案名」欄位改成「所號」，所號由律所自己填寫，照律所自己的編號規則。"],
+  ["a2","建立後的案件編號為：承辦人（email @ 前面的名字）－民國年－流水號－所號。例：amy-115-0065-（所號）。"],
+  ["a3","「案件類型」下拉選單新增「法律顧問」。"],
+  ["a4","新增「法院」下拉選單。法院清單照司法院裁判書查詢「更多條件查詢」的法院列表；括號裡的改制前說明不放進選單。"],
+  ["a5","「法院案號」旁邊新增「股別」欄位。"],
+  ["a6","新增「承辦人員」欄位。"],
+  ["a7","當事人資料新增：手機、市話、email。"],
+  ["a8","新增或修改案件，都不發 email 通知。"],
+  ["a9","可以從當事人查到他所有的案件（一位當事人可能有很多案件）。"]
+ ]},
+ {id:"close", title:"案件狀態與結案", tag:"案件中心", mock:"mClose", items:[
+  ["b1","拿掉「待結案」，案件從「進行中」直接到「已結案」。"],
+  ["b2","案件結案後，可以匯出當年度結案案件的報稅檔。"]
+ ]},
+ {id:"adv", title:"法律顧問", tag:"這次討論最多、最急的部分", mock:"mAdv", items:[
+  ["c1","左側功能選單新增「法律顧問」。"],
+  ["c2","新增案件時選「法律顧問」，系統自動建立這位客戶的時數表。"],
+  ["c3","時數表可以線上編輯，只給律所內部看，不給客戶看。"],
+  ["c4","時數表可以匯出 Excel、PDF，用來跟客戶請款或談續約。"],
+  ["c5","合約快到期時，提醒續約。"],
+  ["c6","結算一期合約時，在同一頁同時看到用了幾小時、花了多少費用。"],
+  ["c7","呈現方式（見右邊示意）：列表一眼看到每位客戶的剩餘時數、到期日、代墊款；點進去依合約期別分開，工時和費用分開列，可以搜尋。"]
+ ]},
+ {id:"fee", title:"費用與雜支", tag:"代墊款、預收款、請款", mock:"mFee", items:[
+  ["d1","每個案件都記錄代墊款，客戶付了、還沒付都記清楚。"],
+  ["d2","雜支以客戶為主：每一筆都追得到是哪位客戶、哪個案件，方便決定要不要跟客戶請款。"],
+  ["d3","可以記錄預收款（例如先預收一筆交通費，再去做服務）。"],
+  ["d4","雜支多、容易漏算：系統整理出還沒請款的費用，方便結帳。"],
+  ["d5","費用都連在一起看：法律顧問的時數和費用、一般案件的雜支都看得到。"],
+  ["d6","合約請款單：由 SWT 先出一版給律所看，再調整。"]
+ ]}
+];
+const ALL = SECTIONS.flatMap(s=>s.items.map(([id,text])=>({id,text,sec:s.title})));
+
+/* ---------- state ---------- */
+const KEY="dianfanConfirm.20261119.v1";
+let ST={who:"",items:{},final:""};
+try{const raw=localStorage.getItem(KEY); if(raw) ST=Object.assign(ST,JSON.parse(raw));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
+function it(id){return ST.items[id]||(ST.items[id]={s:"",note:"",text:""})}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2600)}
+
+/* ---------- mocks ---------- */
+const MOCKS={
+mCase(){return `
+<div class="mock-cap"><span>畫面示意：建立案件</span><b>可以點、可以打字</b></div>
+<div class="form">
+  <label class="f changed"><span>所號 *（原本是「案名」）</span><input id="mk_no" placeholder="律所自己填"></label>
+  <label class="f new"><span>承辦人員</span><select id="mk_owner"><option value="amy">amy（範例）</option><option value="ben">ben（範例）</option><option value="cindy">cindy（範例）</option></select></label>
+  <label class="f new"><span>案件類型</span><select id="mk_type"><option>民事</option><option>刑事</option><option>行政訴訟</option><option>非訟</option><option>其他</option><option selected>法律顧問</option></select></label>
+  <label class="f"><span>階段</span><select><option>諮詢中</option><option>評估中</option><option selected>進行中</option><option>已結案</option></select></label>
+  <label class="f"><span>委任人（當事人）</span><input placeholder="例：範例科技股份有限公司"></label>
+  <label class="f"><span>訴訟地位</span><input placeholder="例：原告、被告、告訴人"></label>
+  <label class="f new"><span>手機</span><input inputmode="tel" placeholder="09xx-xxx-xxx"></label>
+  <label class="f new"><span>市話</span><input inputmode="tel" placeholder="04-xxxx-xxxx"></label>
+  <label class="f new full"><span>當事人 email</span><input type="email" placeholder="name@example.com"></label>
+  <label class="f new full"><span>法院（下拉選單，共 ${COURTS.length} 個）</span><select id="mk_court"><option value="">請選擇法院</option>${COURTS.map(c=>`<option>${c}</option>`).join("")}</select></label>
+  <label class="f"><span>法院案號</span><input placeholder="例：115年度訴字第123號"></label>
+  <label class="f new"><span>股別</span><input placeholder="例：仁股"></label>
+</div>
+<div class="caseno"><div class="lbl">按「建立案件」後，案件編號會是：</div><div class="val" id="mk_out"></div>
+<div class="note-s">承辦人 － 民國年 － 流水號（系統自動）－ 所號（律所自己填）</div></div>
+<div class="note-s">新增、修改案件都不會寄 email 通知。</div>`},
+mClose(){return `
+<div class="mock-cap"><span>畫面示意：案件中心上方的狀態</span></div>
+<div class="stats">
+  <div class="stat">全部<b>4</b></div><div class="stat">諮詢中<b>0</b></div><div class="stat">評估中<b>0</b></div>
+  <div class="stat">進行中<b>3</b></div><div class="stat">已結案<b>1</b></div>
+</div>
+<div class="subh"><span>已結案的案件</span><button class="btn" data-demo="會匯出 ${ROC} 年度所有已結案案件的報稅檔。">匯出 ${ROC} 年度報稅檔</button></div>
+<div class="note-s">沒有「待結案」：案件從進行中直接到已結案。報稅檔的欄位內容，之後再跟律所確認。</div>`},
+mAdv(){return `
+<div class="mock-cap"><span>畫面示意：左側選單＋法律顧問頁</span><b>點客戶看明細</b></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">
+ <div class="menu" aria-label="左側選單示意"><div>首頁工作台</div><div>案件中心</div><div>客戶／當事人</div><div class="hl">法律顧問　新增</div><div>文件中心</div><div>帳務管理</div><div>…</div></div>
+ <div class="note-s" style="flex:1;min-width:160px">新增案件時「案件類型」選「法律顧問」，這位客戶就會自動出現在這一頁，並建好時數表。</div>
+</div>
+<div class="chips" id="advFilter">
+ <button class="chip" aria-pressed="true" data-f="all">全部</button>
+ <button class="chip" aria-pressed="false" data-f="due">60 天內到期</button>
+ <button class="chip" aria-pressed="false" data-f="over">時數用超</button>
+ <button class="chip" aria-pressed="false" data-f="bill">有待請款</button>
+</div>
+<div class="tbl-wrap"><table><thead><tr><th>客戶（範例）</th><th>本期合約</th><th>時數（已用／已購）</th><th class="n">剩餘</th><th>到期</th><th class="n">待請款</th></tr></thead><tbody id="advList"></tbody></table></div>
+<div id="advDetail"></div>`},
+mFee(){return `
+<div class="mock-cap"><span>畫面示意：一個案件的費用頁</span><b>點「請款狀態」可切換</b></div>
+<div class="detail">
+ <div class="dh"><h3>案件 amy-115-0065-（所號）｜範例建設股份有限公司</h3><button class="btn ghost" data-demo="會依客戶整理出所有待請款的費用，方便結帳。">產生請款明細</button></div>
+ <div class="tiles" id="feeTiles"></div>
+ <div class="tbl-wrap"><table><thead><tr><th>日期</th><th>類別</th><th>說明</th><th class="n">預收／收款</th><th class="n">支出</th><th>經手人</th><th>請款狀態</th></tr></thead><tbody id="feeRows"></tbody></table></div>
+ <div class="note-s">每筆費用都掛在「客戶＋案件」底下，所以在客戶頁、案件頁、法律顧問頁都看得到同一筆。</div>
+</div>`}
+};
+
+/* 法律顧問範例資料（全部虛構） */
+const TODAY=new Date(2026,10,19);
+const ADV=[
+ {name:"範例科技股份有限公司",periods:[
+  {label:"115.06.01–116.05.31",end:new Date(2027,4,31),buy:10,
+   hours:[["115.06.12","合約審閱","工程合約審閱",2],["115.07.03","開會","討論勞動契約",1],["115.08.20","律師函","撰寫律師函",1.5],["115.09.15","諮詢","電話諮詢資遣事宜",0.5],["115.10.30","合約審閱","保密合約審閱",2.5]],
+   fees:[["115.06.15","預收","預收代墊款",3000,0,"秘書","—"],["115.08.21","存證信函","存證信函費",0,345,"amy","已從預收扣"],["115.08.21","郵資","掛號郵資",0,102,"amy","已從預收扣"],["115.10.02","裁判費","聲請裁判費",0,1000,"ben","已從預收扣"],["115.11.05","交通費","高鐵往返台北",0,1490,"amy","待請款"]]},
+  {label:"114.06.01–115.05.31",end:new Date(2026,4,31),buy:10,
+   hours:[["114.07.10","合約審閱","租賃合約審閱",4],["114.11.02","開會","股東會議",3],["115.03.18","合約審閱","承攬合約修改",3]],fees:[]}
+ ]},
+ {name:"範例建設股份有限公司",periods:[
+  {label:"115.01.01–115.12.31",end:new Date(2026,11,31),buy:10,
+   hours:[["115.02.11","合約審閱","承攬合約審閱",3],["115.05.20","開會","工地糾紛討論",4],["115.08.08","律師函","撰寫律師函",2],["115.10.15","強制執行","聲請強制執行",2]],
+   fees:[["115.08.09","郵資","律師函郵資",0,60,"cindy","待請款"],["115.10.16","規費","執行費",0,1500,"cindy","待請款"]]}
+ ]},
+ {name:"範例開發有限公司",periods:[
+  {label:"115.09.11–116.09.10",end:new Date(2027,8,10),buy:10,
+   hours:[["115.09.30","諮詢","公司法問題研究",1],["115.10.21","合約審閱","合作備忘錄",1]],
+   fees:[["115.09.12","預收","預收交通費",2000,0,"秘書","—"],["115.10.21","交通費","台中往返",0,800,"ben","已從預收扣"]]}
+ ]}
+];
+const sum=(a,i)=>a.reduce((t,r)=>t+r[i],0);
+const fmt=n=>n.toLocaleString("zh-TW");
+const dayLeft=d=>Math.round((d-TODAY)/864e5);
+let advF="all", advSel=0, advPer=0, advQ="";
+function advStat(c){const p=c.periods[0];const used=sum(p.hours,3);const bill=p.fees.filter(f=>f[6]==="待請款").reduce((t,f)=>t+f[4],0);return {p,used,left:p.buy-used,days:dayLeft(p.end),bill}}
+function renderAdvList(){
+ const tb=document.getElementById("advList"); if(!tb) return;
+ tb.innerHTML=ADV.map((c,i)=>{const s=advStat(c);
+  const show=advF==="all"||(advF==="due"&&s.days<=60)||(advF==="over"&&s.left<0)||(advF==="bill"&&s.bill>0);
+  if(!show) return "";
+  const pct=Math.min(100,s.used/s.p.buy*100);
+  const due=s.days<=60?`<span class="pill p-warn">剩 ${s.days} 天</span>`:`<span class="pill p-mute">${s.p.label.split("–")[1]}</span>`;
+  return `<tr class="click${i===advSel?" sel":""}" data-i="${i}" tabindex="0"><td>${c.name}</td><td>${s.p.label}</td>
+  <td><span class="hbar"><i class="${s.left<0?"over":""}" style="width:${pct}%"></i></span>${s.used}／${s.p.buy}</td>
+  <td class="n">${s.left<0?`<span class="pill p-bad">${s.left}</span>`:s.left}</td><td>${due}</td>
+  <td class="n">${s.bill?`<span class="pill p-warn">${fmt(s.bill)}</span>`:"—"}</td></tr>`}).join("")||`<tr><td colspan="6">沒有符合的客戶</td></tr>`;
+ renderAdvDetail();
+}
+function renderAdvDetail(){
+ const box=document.getElementById("advDetail"); if(!box) return;
+ const c=ADV[advSel], p=c.periods[advPer]||c.periods[0];
+ const used=sum(p.hours,3), out=sum(p.fees,4), bill=p.fees.filter(f=>f[6]==="待請款").reduce((t,f)=>t+f[4],0);
+ const q=advQ.trim();
+ const H=p.hours.filter(r=>!q||r.join(" ").includes(q)), F=p.fees.filter(r=>!q||r.join(" ").includes(q));
+ let bal=0; const balMap=new Map(p.fees.map(r=>{bal+=r[3]-r[4];return [r,bal]}));
+ box.innerHTML=`<div class="detail">
+ <div class="dh"><h3>${c.name}</h3>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+   <select id="advPer" aria-label="合約期別">${c.periods.map((x,i)=>`<option value="${i}"${i===advPer?" selected":""}>${i===0?"本期":"前期"}　${x.label}</option>`).join("")}</select>
+   <button class="btn ghost" data-demo="會匯出這一期的時數和費用（Excel）。">匯出 Excel</button>
+   <button class="btn ghost" data-demo="會匯出這一期的時數和費用（PDF），可拿去請款或談續約。">匯出 PDF</button>
+  </div></div>
+ <div class="tiles">
+  <div class="tile"><div class="k">已購／已用</div><div class="v">${p.buy}／${used}</div></div>
+  <div class="tile"><div class="k">剩餘時數</div><div class="v${p.buy-used<0?" neg":""}">${p.buy-used}</div></div>
+  <div class="tile"><div class="k">這期費用支出</div><div class="v">${fmt(out)}</div></div>
+  <div class="tile"><div class="k">待請款</div><div class="v${bill?" neg":""}">${fmt(bill)}</div></div>
+ </div>
+ <input id="advQ" placeholder="搜尋這一期的工作內容或費用，例如：律師函" value="${esc(advQ)}">
+ <div class="subh"><span>工時紀錄</span><span class="note-s">${H.length} 筆</span></div>
+ <div class="tbl-wrap"><table><thead><tr><th>日期</th><th>類別</th><th>工作內容</th><th class="n">時數</th></tr></thead><tbody>
+ ${H.map(r=>`<tr><td>${r[0]}</td><td><span class="pill p-mute">${r[1]}</span></td><td class="wrapc">${r[2]}</td><td class="n">${r[3]}</td></tr>`).join("")||`<tr><td colspan="4">沒有資料</td></tr>`}
+ </tbody></table></div>
+ <div class="subh"><span>費用及代墊款</span><span class="note-s">${F.length} 筆</span></div>
+ <div class="tbl-wrap"><table><thead><tr><th>日期</th><th>類別</th><th>說明</th><th class="n">收入</th><th class="n">支出</th><th class="n">餘額</th><th>請款</th></tr></thead><tbody>
+ ${F.map(r=>{const b=balMap.get(r);return `<tr><td>${r[0]}</td><td><span class="pill p-mute">${r[1]}</span></td><td class="wrapc">${r[2]}</td><td class="n">${r[3]?fmt(r[3]):""}</td><td class="n">${r[4]?fmt(r[4]):""}</td><td class="n">${b<0?`<span class="pill p-bad">${fmt(b)}</span>`:fmt(b)}</td><td>${r[6]==="待請款"?'<span class="pill p-warn">待請款</span>':r[6]}</td></tr>`}).join("")||`<tr><td colspan="7">這一期沒有費用</td></tr>`}
+ </tbody></table></div>
+</div>`;
+}
+
+/* 費用示意 */
+const FEE=[["115.10.03","預收","預收交通費","2,000",2000,0,"秘書","—"],["115.10.03","裁判費","起訴裁判費","",0,3000,"amy","客戶已付"],["115.10.05","郵資","掛號郵資","",0,43,"amy","待請款"],["115.10.12","交通費","開庭交通（台北）","",0,1200,"ben","已從預收扣"],["115.10.20","影印費","卷宗影印","",0,350,"ben","待請款"]];
+const FEE_ST=["待請款","已請款","客戶已付","已從預收扣","不請款"];
+function renderFee(){
+ const tb=document.getElementById("feeRows"); if(!tb) return;
+ tb.innerHTML=FEE.map((r,i)=>`<tr><td>${r[0]}</td><td><span class="pill p-mute">${r[1]}</span></td><td class="wrapc">${r[2]}</td><td class="n">${r[4]?fmt(r[4]):""}</td><td class="n">${r[5]?fmt(r[5]):""}</td><td>${r[6]}</td>
+ <td>${r[7]==="—"?"—":`<button class="chip" data-fee="${i}">${r[7]}</button>`}</td></tr>`).join("");
+ const pre=sum(FEE,4)-FEE.filter(r=>r[7]==="已從預收扣").reduce((t,r)=>t+r[5],0);
+ const todo=FEE.filter(r=>r[7]==="待請款").reduce((t,r)=>t+r[5],0);
+ const out=sum(FEE,5);
+ document.getElementById("feeTiles").innerHTML=`
+ <div class="tile"><div class="k">費用支出合計</div><div class="v">${fmt(out)}</div></div>
+ <div class="tile"><div class="k">預收餘額</div><div class="v">${fmt(pre)}</div></div>
+ <div class="tile"><div class="k">待請款</div><div class="v${todo?" neg":""}">${fmt(todo)}</div></div>
+ <div class="tile"><div class="k">待請款筆數</div><div class="v">${FEE.filter(r=>r[7]==="待請款").length}</div></div>`;
+}
+
+/* ---------- render ---------- */
+function itemHtml(id,text,no){
+ const s=it(id), cur=s.text||text;
+ return `<div class="item ${s.s}" id="i_${id}">
+  <div class="row1"><span class="no">${no}</span><div class="txt">
+   <div id="t_${id}">${esc(cur)}</div>
+   ${s.text?`<div class="orig">原本：${esc(text)}</div><div class="edited">已改寫</div>`:""}
+  </div></div>
+  <div class="acts">
+   <button class="b-ok" aria-pressed="${s.s==="ok"}" data-act="ok" data-id="${id}">沒問題</button>
+   <button class="b-chg" aria-pressed="${s.s==="chg"}" data-act="chg" data-id="${id}">要修改</button>
+   <button class="b-edit" data-act="edit" data-id="${id}">改寫這一項</button>
+  </div>
+  <div class="more" id="ed_${id}" hidden>
+   <label for="et_${id}">改寫成：</label><textarea id="et_${id}" rows="2">${esc(cur)}</textarea>
+   <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-act="saveEdit" data-id="${id}">存好</button><button class="btn ghost" data-act="undoEdit" data-id="${id}">改回原本</button><button class="btn ghost" data-act="closeEdit" data-id="${id}">取消</button></div>
+  </div>
+  <div class="more"><label for="n_${id}">意見（選填）</label><textarea id="n_${id}" data-note="${id}" rows="1" placeholder="有想補充或不同意的地方，寫在這裡">${esc(s.note)}</textarea></div>
+ </div>`;
+}
+function render(){
+ let n=0;
+ document.getElementById("main").innerHTML=SECTIONS.map(sec=>`
+ <section class="sec" id="s_${sec.id}">
+  <div class="sec-h"><h2>${sec.title}</h2><span class="tag">${sec.tag}</span></div>
+  <div class="sec-body${sec.mock?"":" solo"}">
+   <div class="items">${sec.items.map(([id,t])=>itemHtml(id,t,++n)).join("")}</div>
+   ${sec.mock?`<div class="mock">${MOCKS[sec.mock]()}</div>`:""}
+  </div>
+ </section>`).join("")+`
+ <section class="sec" id="s_final">
+  <div class="sec-h"><h2>其他意見與送出</h2></div>
+  <div class="final">
+   <label for="finalNote">還有沒提到、想補充的事情嗎？</label>
+   <textarea id="finalNote" rows="3" placeholder="選填">${esc(ST.final)}</textarea>
+   <div id="finalStat" class="note-s"></div>
+   <div class="btns"><button class="btn" id="dl">下載回覆檔</button><button class="btn ghost" id="cp">複製回覆內容</button><button class="btn ghost" id="pv">預覽回覆內容</button></div>
+   <pre class="out" id="out" hidden></pre>
+   <div class="note-s">填的內容只存在這台電腦的瀏覽器裡，我們看不到；請用上面的按鈕把回覆傳給我們。</div>
+  </div>
+ </section>`;
+ renderToc(); updOwner(); renderAdvList(); renderFee();
+}
+function counts(){let ok=0,chg=0;ALL.forEach(x=>{const s=it(x.id).s;if(s==="ok")ok++;if(s==="chg")chg++});return {ok,chg,done:ok+chg,total:ALL.length}}
+function renderToc(){
+ const c=counts();
+ document.getElementById("toc").innerHTML=SECTIONS.map(s=>{const d=s.items.filter(([id])=>it(id).s).length;return `<a href="#s_${s.id}" data-jump="s_${s.id}"><span>${s.title}</span><span class="cnt">${d}/${s.items.length}</span></a>`}).join("")+
+ `<a href="#s_final" data-jump="s_final"><span>其他意見與送出</span></a>
+ <div class="prog">已看 <b>${c.done}</b> / ${c.total} 項<br>沒問題 ${c.ok}｜要修改 ${c.chg}<div class="bar"><i style="width:${c.done/c.total*100}%"></i></div></div>`;
+ const fs=document.getElementById("finalStat"); if(fs) fs.textContent=`目前：沒問題 ${c.ok} 項、要修改 ${c.chg} 項、還沒看 ${c.total-c.done} 項。`;
+}
+function updOwner(){
+ const o=document.getElementById("mk_out"); if(!o) return;
+ const no=(document.getElementById("mk_no").value||"").trim();
+ o.innerHTML=`${esc(document.getElementById("mk_owner").value)}-${ROC}-0065-<em>${no?esc(no):"（所號）"}</em>`;
+}
+function reply(){
+ const c=counts(); const L=[];
+ L.push("# 典範法律事務所 需求確認回覆（2026-11-19 會議）","");
+ L.push(`填寫人：${ST.who||"（未填）"}`,`結果：沒問題 ${c.ok} 項、要修改 ${c.chg} 項、還沒看 ${c.total-c.done} 項`,"");
+ let n=0;
+ SECTIONS.forEach(sec=>{L.push(`## ${sec.title}`);sec.items.forEach(([id,t])=>{n++;const s=it(id);
+  const st=s.s==="ok"?"沒問題":s.s==="chg"?"要修改":"還沒看";
+  L.push(`${n}. 【${st}】${s.text||t}`); if(s.text) L.push(`   （原本：${t}）`); if(s.note) L.push(`   意見：${s.note}`)});L.push("")});
+ L.push("## 其他意見",ST.final||"（無）");
+ return L.join("\n");
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",async e=>{
+ const j=e.target.closest("[data-jump]"); if(j){e.preventDefault();document.getElementById(j.dataset.jump).scrollIntoView({block:"start"});return}
+ const d=e.target.closest("[data-demo]"); if(d){toast("示意畫面："+d.dataset.demo);return}
+ const a=e.target.closest("[data-act]");
+ if(a){const id=a.dataset.id, s=it(id), act=a.dataset.act;
+  if(act==="ok"||act==="chg"){s.s=s.s===act?"":act;if(act==="chg"&&s.s)setTimeout(()=>document.getElementById("n_"+id).focus(),0)}
+  else if(act==="edit"){document.getElementById("ed_"+id).hidden=false;document.getElementById("et_"+id).focus();return}
+  else if(act==="closeEdit"){document.getElementById("ed_"+id).hidden=true;return}
+  else if(act==="saveEdit"){const v=document.getElementById("et_"+id).value.trim();const orig=ALL.find(x=>x.id===id).text;s.text=(v&&v!==orig)?v:"";if(s.text&&!s.s)s.s="chg"}
+  else if(act==="undoEdit"){s.text=""}
+  save(); const sy=scrollY; rerenderItem(id); scrollTo(0,sy); return}
+ const f=e.target.closest("[data-f]"); if(f){advF=f.dataset.f;document.querySelectorAll("#advFilter .chip").forEach(b=>b.setAttribute("aria-pressed",b===f));renderAdvList();return}
+ const r=e.target.closest("tr.click"); if(r){advSel=+r.dataset.i;advPer=0;advQ="";renderAdvList();return}
+ const fb=e.target.closest("[data-fee]"); if(fb){const row=FEE[+fb.dataset.fee];row[7]=FEE_ST[(FEE_ST.indexOf(row[7])+1)%FEE_ST.length];renderFee();return}
+ if(e.target.id==="pv"){const o=document.getElementById("out");o.textContent=reply();o.hidden=!o.hidden;return}
+ if(e.target.id==="cp"){const txt=reply();try{await navigator.clipboard.writeText(txt);toast("已複製，可以貼到 email 或 LINE 傳給我們")}catch(err){const o=document.getElementById("out");o.textContent=txt;o.hidden=false;const rg=document.createRange();rg.selectNodeContents(o);const sel=getSelection();sel.removeAllRanges();sel.addRange(rg);toast("沒辦法自動複製，內容已經選好，請按 Ctrl+C")}return}
+ if(e.target.id==="dl"){
+  let dl=null; try{dl=await window.claude?.use?.("downloads")}catch(err){}
+  if(!dl){
+   if(window.claude){toast("這裡沒辦法下載，請改用「複製回覆內容」");return}
+   try{const url=URL.createObjectURL(new Blob([reply()],{type:"text/plain;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="典範需求確認回覆_2026-11-19.txt";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast("已下載回覆檔，請把檔案傳給我們")}
+   catch(err){toast("下載沒有成功，請改用「複製回覆內容」")}
+   return}
+  try{await dl.save({filename:"典範需求確認回覆_2026-11-19.md",data:reply()});toast("已下載回覆檔")}
+  catch(err){if(err&&err.code==="declined")return;toast("下載沒有成功，請改用「複製回覆內容」")}
+ }
+});
+document.addEventListener("keydown",e=>{const r=e.target.closest&&e.target.closest("tr.click");if(r&&(e.key==="Enter"||e.key===" ")){e.preventDefault();r.click()}});
+document.addEventListener("input",e=>{
+ const t=e.target;
+ if(t.dataset.note){it(t.dataset.note).note=t.value;save();return}
+ if(t.id==="who"){ST.who=t.value;save();return}
+ if(t.id==="finalNote"){ST.final=t.value;save();return}
+ if(t.id==="mk_no"){updOwner();return}
+ if(t.id==="advQ"){advQ=t.value;const pos=t.selectionStart;renderAdvDetail();const n=document.getElementById("advQ");n.focus();n.setSelectionRange(pos,pos);return}
+});
+document.addEventListener("change",e=>{
+ if(e.target.id==="mk_owner"){updOwner();return}
+ if(e.target.id==="advPer"){advPer=+e.target.value;renderAdvDetail();return}
+});
+function rerenderItem(id){
+ const old=document.getElementById("i_"+id); const sec=SECTIONS.find(s=>s.items.some(x=>x[0]===id));
+ const no=ALL.findIndex(x=>x.id===id)+1; const txt=sec.items.find(x=>x[0]===id)[1];
+ const tmp=document.createElement("div"); tmp.innerHTML=itemHtml(id,txt,no); old.replaceWith(tmp.firstElementChild); renderToc();
+}
+document.getElementById("who").value=ST.who;
+render();
+</script>
+
+</body></html>
