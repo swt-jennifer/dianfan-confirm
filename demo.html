@@ -131,6 +131,7 @@ label.f.full{grid-column:1/-1}
     <button data-page="clients">當事人</button>
     <button data-page="adv">法律顧問 <span class="ref">3-1</span></button>
     <button data-page="fees">費用與雜支</button>
+    <button data-page="docs">文件產出 <span class="ref">5-1</span></button>
   </nav>
   <main id="main"></main>
 </div>
@@ -193,9 +194,9 @@ function stBtn(s,attrs){const cls={"未請款":"warn","已請款":"blue","客戶
 const nextSt = s => FEE_ST[(FEE_ST.indexOf(s)+1)%FEE_ST.length];
 
 /* ===== 路由 ===== */
-let state = {page:"cases", filter:"全部", caseId:null, client:null, advIdx:null, period:0, advFilter:"all", q:""};
+let state = {page:"cases", filter:"全部", caseId:null, client:null, advIdx:null, period:0, advFilter:"all", q:"", docType:null, docTarget:null, docFrom:null};
 function go(p){Object.assign(state,p);render();window.scrollTo(0,0)}
-document.querySelectorAll("nav.side button").forEach(b=>b.onclick=()=>go({page:b.dataset.page,caseId:null,client:null,advIdx:null,period:0,q:""}));
+document.querySelectorAll("nav.side button").forEach(b=>b.onclick=()=>go({page:b.dataset.page,caseId:null,client:null,advIdx:null,period:0,q:"",docType:null,docTarget:null,docFrom:null}));
 function render(){
   document.querySelectorAll("nav.side button").forEach(b=>b.setAttribute("aria-current",b.dataset.page===state.page?"page":"false"));
   const m=$("#main");
@@ -203,6 +204,7 @@ function render(){
   if(state.page==="clients") m.innerHTML = vClients();
   if(state.page==="adv") m.innerHTML = state.advIdx!=null ? vAdvDetail() : vAdv();
   if(state.page==="fees") m.innerHTML = vFees();
+  if(state.page==="docs"){ m.innerHTML = vDocs(); buildDoc(); }
 }
 
 /* ===== 案件中心 ===== */
@@ -273,8 +275,8 @@ function vCase(){
    </tbody></table></div></div>
   <div class="card"><div class="row"><b>費用與雜支</b><span class="ref">4-1</span><span class="ref">4-3</span><div class="spacer"></div>
     <button class="btn small" onclick="editCaseFee(${c.id},-1)">＋ 新增費用</button>
-    <button class="btn small" ${lit?"":"disabled title='請款單跟著訴訟案件'"} onclick="docInvoice(${c.id})">產生請款單 <span class="ref">5-2</span></button>
-    <button class="btn small primary" onclick="docReceipt(${c.id})">開收據 <span class="ref">5-3</span></button></div>
+    <button class="btn small" ${lit?"":"disabled title='請款單跟著訴訟案件'"} onclick="go({page:'docs',docType:'invoice',docTarget:${c.id},docFrom:'case:${c.id}'})">產生請款單 <span class="ref">5-2</span></button>
+    <button class="btn small primary" onclick="go({page:'docs',docType:'receipt',docTarget:${c.id},docFrom:'case:${c.id}'})">開收據 <span class="ref">5-3</span></button></div>
    <div class="tiles"><div class="tile"><span>預收款</span><b>${money(s.pre)}</b></div><div class="tile"><span>客戶未付</span><b>${money(s.unpaid)}</b></div><div class="tile"><span>還沒請款</span><b>${money(s.unb)}</b></div></div>
    <div class="tbl"><table><thead><tr><th>日期</th><th>類別</th><th>說明</th><th class="n">預收／收款</th><th class="n">支出</th><th>狀態（點一下切換）</th><th></th></tr></thead><tbody>
    ${c.fees.map((f,i)=>`<tr><td>${esc(f.d)}</td><td>${esc(f.cat)}</td><td>${esc(f.desc)}</td><td class="n">${f.inc?money(f.inc):""}</td><td class="n">${f.out?money(f.out):""}</td><td>${stBtn(f.st,`onclick="cycleCaseFee(${c.id},${i})"`)}</td><td class="n"><button class="btn small" onclick="editCaseFee(${c.id},${i})">編輯</button></td></tr>`).join("")||'<tr><td colspan="7" class="note">還沒有費用紀錄</td></tr>'}
@@ -353,7 +355,7 @@ function vAdvDetail(){
   <div class="row"><div><h1>${esc(a.name)}</h1><p class="sub">承辦人員：${esc(a.owner)}｜聯絡人：${esc(a.contact||"—")}</p></div><div class="spacer"></div>
    <button class="btn" onclick="toast('示範：會下載這一期的時數表 Excel（3-4）')">匯出 Excel</button>
    <button class="btn" onclick="toast('示範：會下載這一期的時數表 PDF（3-4）')">匯出 PDF</button>
-   <button class="btn primary" onclick="docQuote(${state.advIdx})">匯出報價單 <span class="ref" style="color:#fff;border-color:#fff">3-9</span></button></div>
+   <button class="btn primary" onclick="go({page:'docs',docType:'quote',docTarget:${state.advIdx},docFrom:'adv:${state.advIdx}'})">匯出報價單 <span class="ref" style="color:#fff;border-color:#fff">3-9</span></button></div>
   <div class="row" style="margin:8px 0"><label class="f" style="flex-direction:row;align-items:center;gap:6px">合約期別 <span class="ref">3-7</span><select onchange="go({period:+this.value})">${a.periods.map((p,i)=>`<option value="${i}" ${i===state.period?"selected":""}>${p.label}${i===0?"（本期）":""}</option>`).join("")}</select></label>
    <div class="spacer"></div><input class="search" placeholder="搜尋工時或費用…" value="${esc(state.q)}" oninput="state.q=this.value;clearTimeout(window._qt);window._qt=setTimeout(()=>{render();const i=document.querySelector('.search');i.focus();i.setSelectionRange(i.value.length,i.value.length)},250)"></div>
   <div class="tiles"><div class="tile"><span>已購時數</span><b>${s.p.buy}</b></div><div class="tile"><span>已用時數</span><b>${s.used}</b></div><div class="tile"><span>剩餘時數</span><b style="color:${s.left<0?"var(--bad)":"inherit"}">${s.left}</b></div><div class="tile"><span>費用支出</span><b>${money(s.out)}</b></div><div class="tile"><span>待請款</span><b>${money(s.unb)}</b></div></div>
@@ -446,13 +448,43 @@ const head = () => `<div class="firm">${FIRM.name}　${FIRM.en}</div><div class=
 const dateLine = () => `<div class="date"><span>中華民國</span><span>${F(ROC)}年</span><span>${F(11)}月</span><span>${F(19)}日</span></div>`;
 const SEAL = `<div class="seal">事務所印鑑<br>浮水印<br>（待律所提供）</div>`;
 const SEAL_AT = `<div style="position:relative;height:0"><div class="seal" style="bottom:-40px">事務所印鑑<br>浮水印<br>（待律所提供）</div></div>`;
+const DOC_TYPES = [["invoice","請款單","跟著訴訟案件"],["receipt","收據","跟著案件"],["quote","報價單","跟著法律顧問客戶"]];
+function docTargets(t){
+  if(t==="invoice") return cases.filter(c=>LIT.includes(c.type)).map(c=>[c.id,`${caseNo(c)}｜${c.client}｜${c.reason}`]);
+  if(t==="receipt") return cases.map(c=>[c.id,`${caseNo(c)}｜${c.client}｜${c.reason}`]);
+  if(t==="quote") return adv.map((a,i)=>[i,a.name]);
+  return [];
+}
+function vDocs(){
+  const t=state.docType, tg=state.docTarget, f=state.docFrom;
+  let back="";
+  if(f&&f.startsWith("case:")){const id=+f.slice(5);const c=cases.find(x=>x.id===id);if(c)back=`<button class="back" onclick="go({page:'cases',caseId:${id}})">← 回案件 ${esc(caseNo(c))}</button>`}
+  if(f&&f.startsWith("adv:")){const i=+f.slice(4);if(adv[i])back=`<button class="back" onclick="go({page:'adv',advIdx:${i},period:0,q:''})">← 回法律顧問 ${esc(adv[i].name)}</button>`}
+  const opts=docTargets(t);
+  return `${back}<h1>文件產出</h1><p class="sub">選文件 → 選案件或客戶 → 預覽並修改 → 下載電子檔或列印 <span class="ref">5-1</span></p>
+  <div class="card">
+   <b>1. 要產生哪一種文件</b>
+   <div class="chips">${DOC_TYPES.map(([k,n,d])=>`<button class="chip" aria-pressed="${t===k}" onclick="go({docType:'${k}',docTarget:null,docFrom:null})">${n}<span class="note" style="margin-left:6px;color:inherit;opacity:.8">${d}</span></button>`).join("")}</div>
+   ${t?`<label class="f" style="max-width:520px;margin-top:6px"><b style="color:var(--ink);font-size:15px">2. 選${t==="quote"?"法律顧問客戶":"案件"}</b>
+     <select onchange="go({docTarget:this.value===''?null:+this.value,docFrom:null})"><option value="">請選擇</option>${opts.map(([v,l])=>`<option value="${v}" ${v===tg?"selected":""}>${esc(l)}</option>`).join("")}</select></label>
+     ${t==="invoice"?'<p class="note">請款單只列出訴訟案件（民事、刑事、行政訴訟）。</p>':""}`:""}
+  </div>
+  <div id="docArea">${t&&tg!=null?"":`<p class="note">${t?"選好"+(t==="quote"?"客戶":"案件")+"後，這裡會出現文件預覽。":"先選一種文件。"}</p>`}</div>`;
+}
+function buildDoc(){
+  const t=state.docType, tg=state.docTarget;
+  if(!t||tg==null) return;
+  if(t==="invoice") docInvoice(tg);
+  if(t==="receipt") docReceipt(tg);
+  if(t==="quote") docQuote(tg);
+}
 function docShell(title, refs, paper, extra="", sign=false){
-  openModal(`<div class="row"><h2>${title}</h2>${refs}<div class="spacer"></div><button class="btn small" onclick="closeModal()">關閉</button></div>
+  $("#docArea").innerHTML = (`<div class="card"><div class="row"><h2 style="margin:0;font-size:18px">${title}</h2>${refs}</div>
   <p class="note">黃色底的地方都是系統帶入的資料，<b>直接點進去就能修改</b>，改好再下載或列印 <span class="ref">5-1</span></p>
   ${extra}
   <div class="toolbar"><button class="btn" onclick="toast('示範：正式系統會直接下載 PDF 電子檔')">下載電子檔</button><button class="btn primary" onclick="window.print()">列印</button><span class="spacer"></span>${sign?`<button class="btn" onclick="showSign()">產生同意函回簽連結 <span class="ref">5-7</span></button>`:""}</div>
   <div class="sign-box" id="signBox">${qrSvg()}<div><b>同意函回簽</b><div class="note">客戶用手機掃 QR code，或點下面的連結，就能線上簽同意函。</div><div style="font-family:Consolas,monospace;font-size:13px;margin-top:4px">https://law.example.com/sign/ab12cd（示範）</div></div></div>
-  <div id="paperWrap">${paper}</div>`);
+  <div id="paperWrap">${paper}</div></div>`);
 }
 function showSign(){$("#signBox").classList.toggle("show")}
 function qrSvg(){
