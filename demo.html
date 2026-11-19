@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>典範系統示範</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#fff; --ink:#1f2328; --mute:#59636e; --line:#d8dee4; --soft:#eef1f4;
+  --brand:#0b5cad; --brand-soft:#e6f0fb; --ok:#1a7f37; --ok-soft:#e6f4ea; --warn:#9a6700; --warn-soft:#fff6d6;
+  --bad:#c62828; --bad-soft:#fdeaea; --paper:#fff; --paper-ink:#111;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15181c; --panel:#1d2126; --ink:#e6e8eb; --mute:#9aa4ae; --line:#333a42; --soft:#262b31;
+    --brand:#5aa2f0; --brand-soft:#1c2b3d; --ok:#4cc26b; --ok-soft:#1b2e22; --warn:#e0b341; --warn-soft:#332a12;
+    --bad:#f27373; --bad-soft:#3a1f1f;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;font-size:15px;line-height:1.55}
+button,input,select{font:inherit;color:inherit}
+.demo-bar{background:var(--brand);color:#fff;padding:6px 16px;font-size:13px}
+.app{display:flex;min-height:calc(100vh - 32px)}
+nav.side{width:190px;flex:none;background:var(--panel);border-right:1px solid var(--line);padding:14px 10px}
+nav.side .logo{font-weight:700;padding:4px 10px 12px;font-size:16px}
+nav.side button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:0;background:none;padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px}
+nav.side button:hover{background:var(--soft)}
+nav.side button[aria-current="page"]{background:var(--brand-soft);color:var(--brand);font-weight:700}
+main{flex:1;min-width:0;padding:18px 22px 40px}
+h1{font-size:21px;margin:0 0 4px}
+.sub{color:var(--mute);font-size:13px;margin:0 0 14px}
+.ref{display:inline-block;font-size:11px;color:var(--brand);border:1px solid var(--brand);border-radius:10px;padding:0 6px;margin-left:6px;vertical-align:middle;font-weight:400;line-height:1.6}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 13px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.small{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:4px 12px;cursor:pointer;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip b{margin-left:4px}
+.tbl{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12.5px;color:var(--mute);font-weight:600;background:var(--soft);white-space:nowrap}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--soft)}
+.tag{display:inline-block;border-radius:10px;padding:0 8px;font-size:12.5px;border:1px solid var(--line);white-space:nowrap}
+.tag.ok{color:var(--ok);background:var(--ok-soft);border-color:transparent}
+.tag.warn{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.tag.bad{color:var(--bad);background:var(--bad-soft);border-color:transparent}
+.tag.blue{color:var(--brand);background:var(--brand-soft);border-color:transparent}
+button.tag{cursor:pointer;font:inherit;font-size:12.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:10px 0}
+.tile{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--panel)}
+.tile span{display:block;font-size:12px;color:var(--mute)}
+.tile b{font-size:19px}
+.alert{border-radius:8px;padding:9px 12px;margin-bottom:12px;background:var(--warn-soft);color:var(--warn);font-size:14px}
+.alert b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 14px}
+.kv span{display:block;font-size:12px;color:var(--mute)}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--mute)}
+label.f input,label.f select{border:1px solid var(--line);border-radius:7px;padding:7px 9px;background:var(--panel);font-size:15px}
+label.f.full{grid-column:1/-1}
+.req{color:var(--bad)}
+.contact-box{grid-column:1/-1;border:1px dashed var(--line);border-radius:8px;padding:10px}
+.contact{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;padding:8px 0;border-bottom:1px solid var(--soft)}
+.contact:last-of-type{border-bottom:0}
+.caseno{margin-top:12px;padding:10px 12px;background:var(--brand-soft);border-radius:8px}
+.caseno code{font-family:Consolas,monospace;font-size:18px;font-weight:700;color:var(--brand)}
+.note{font-size:12.5px;color:var(--mute)}
+.search{border:1px solid var(--line);border-radius:7px;padding:6px 10px;background:var(--panel);min-width:200px}
+.back{border:0;background:none;color:var(--brand);cursor:pointer;padding:0;margin-bottom:8px}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow-y:auto;z-index:20}
+.overlay[hidden]{display:none}
+.modal{background:var(--panel);border-radius:12px;width:min(820px,100%);padding:16px 18px}
+.modal h2{margin:0 0 4px;font-size:18px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+/* paper */
+.paper{background:var(--paper);color:var(--paper-ink);border:1px solid #ccc;box-shadow:0 2px 10px rgba(0,0,0,.12);padding:34px 40px;font-family:"DFKai-SB","BiauKai","標楷體","Microsoft JhengHei",serif;font-size:15.5px;line-height:1.9;position:relative;overflow:hidden}
+.paper h3{text-align:center;font-size:20px;letter-spacing:6px;margin:6px 0 12px}
+.paper .firm{text-align:center;font-size:21px;font-weight:700;letter-spacing:2px}
+.paper .addr{text-align:center;font-size:11.5px;border-bottom:1px solid #333;padding-bottom:4px;margin-bottom:6px}
+.paper p{margin:4px 0}
+.paper .ind{padding-left:2em}
+.paper .date{display:flex;justify-content:space-between;margin-top:22px;letter-spacing:4px}
+.fld{background:#fff3b8;border-bottom:1px dashed #b38600;padding:0 3px;outline:none}
+.fld:empty{display:inline-block;min-width:5em;height:1.4em;vertical-align:bottom}
+.fld:focus{background:#ffe680}
+.seal{position:absolute;right:56px;bottom:70px;width:120px;height:120px;border:3px solid rgba(198,40,40,.55);color:rgba(198,40,40,.6);border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;line-height:1.3;transform:rotate(-8deg);pointer-events:none;font-family:"Microsoft JhengHei",sans-serif}
+.sign-box{display:none;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:8px;gap:14px;align-items:center}
+.sign-box.show{display:flex}
+.qr{width:96px;height:96px;flex:none}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#222;color:#fff;padding:9px 16px;border-radius:8px;font-size:14px;z-index:40;max-width:90vw}
+.toast[hidden]{display:none}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--panel);padding:5px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff}
+@media (max-width:760px){
+  .app{flex-direction:column}
+  nav.side{width:auto;display:flex;gap:4px;overflow-x:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line)}
+  nav.side .logo{display:none}
+  nav.side button{width:auto;white-space:nowrap}
+  main{padding:14px 16px 40px}
+  .paper{padding:22px 18px;font-size:14px}
+  .seal{right:18px;width:96px;height:96px}
+}
+@media print{
+  body *{visibility:hidden}
+  #paperWrap,#paperWrap *{visibility:visible}
+  #paperWrap{position:absolute;left:0;top:0;width:100%}
+  .paper{border:0;box-shadow:none}
+  .fld{background:none;border:0}
+}
+</style>
+</head>
+<body>
+<div class="demo-bar">示範畫面｜資料都是虛構的｜藍色小標籤＝對應「1119 會議修改項目」的編號</div>
+<div class="app">
+  <nav class="side" aria-label="主選單">
+    <div class="logo">AID Legal</div>
+    <button data-page="cases">案件中心</button>
+    <button data-page="clients">當事人</button>
+    <button data-page="adv">法律顧問 <span class="ref">3-1</span></button>
+    <button data-page="fees">費用與雜支</button>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<div class="overlay" id="ov" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ===== 範例資料（全部虛構） ===== */
+const ROC = 115, TODAY = new Date(2026,10,19), ME = "amy";
+const FIRM = {name:"典範法律事務所", en:"Paradigm Law Firm", addr:"403507 台中市西區五權路 2-106 號 16 樓", tel:"(04)23767268", taxid:"47581963"};
+const LIT = ["民事","刑事","行政訴訟"]; // 訴訟案件：可產生請款單
+let seq = 66;
+const cases = [
+ {id:1, owner:"amy", seq:"0061", no:"A115-021", reason:"給付票款", type:"民事", status:"進行中", source:"舊客戶介紹", client:"王小明", court:"臺灣臺中地方法院", courtNo:"115年度訴字第123號", unit:"仁股",
+  contacts:[{name:"王小明",mobile:"0912-000-111",tel:"04-2200-1111",email:"wang@example.com"}],
+  fees:[{d:"115.08.02",cat:"預收",desc:"預收裁判費",inc:5000,out:0,st:"已收"},{d:"115.08.05",cat:"裁判費",desc:"第一審裁判費",inc:0,out:3300,st:"已從預收扣"},{d:"115.10.14",cat:"交通費",desc:"高鐵往返台北開庭",inc:0,out:1490,st:"未請款"},{d:"115.10.14",cat:"影印",desc:"閱卷影印",inc:0,out:620,st:"已請款"}],
+  bill:{fee:60000, prepay:10000}},
+ {id:2, owner:"ben", seq:"0062", no:"B115-007", reason:"傷害", type:"刑事", status:"進行中", source:"網路", client:"陳美華", court:"臺灣臺中地方檢察署", courtNo:"115年度偵字第4567號", unit:"義股",
+  contacts:[{name:"陳美華",mobile:"0922-000-222",tel:"",email:"chen@example.com"},{name:"陳大同（家屬）",mobile:"0933-000-333",tel:"04-2300-2222",email:""}],
+  fees:[{d:"115.09.20",cat:"郵資",desc:"掛號郵資",inc:0,out:102,st:"客戶已付"}], bill:{fee:70000, prepay:0}},
+ {id:3, owner:"amy", seq:"0063", no:"A115-022", reason:"法律顧問", type:"法律顧問", status:"進行中", source:"既有顧問客戶", client:"範例科技股份有限公司", court:"", courtNo:"", unit:"",
+  contacts:[{name:"林經理",mobile:"0911-000-444",tel:"04-2400-3333",email:"lin@example.com"}], fees:[], bill:{fee:0,prepay:0}, adv:"範例科技股份有限公司"},
+ {id:4, owner:"cindy", seq:"0058", no:"C115-003", reason:"清償借款", type:"民事", status:"已結案", source:"律師公會轉介", client:"王小明", court:"臺灣彰化地方法院", courtNo:"115年度簡字第88號", unit:"信股",
+  contacts:[{name:"王小明",mobile:"0912-000-111",tel:"04-2200-1111",email:"wang@example.com"}], fees:[{d:"115.04.11",cat:"裁判費",desc:"裁判費",inc:0,out:1000,st:"客戶已付"}], bill:{fee:30000,prepay:0}}
+];
+const adv = [
+ {name:"範例科技股份有限公司", owner:"amy", contact:"林經理", plan:{hours:10, rate:5000}, over:4500,
+  periods:[
+   {label:"115.06.01–116.05.31", end:new Date(2027,4,31), buy:10,
+    hours:[["115.06.12","合約審閱","工程合約審閱","amy",2],["115.07.03","開會","討論勞動契約","amy",1],["115.08.20","律師函","撰寫律師函","ben",1.5],["115.09.15","諮詢","電話諮詢資遣事宜","amy",0.5],["115.10.30","合約審閱","保密合約審閱","amy",2.5]],
+    fees:[["115.06.15","預收","預收代墊款",3000,0,"已收"],["115.08.21","存證信函","存證信函費",0,345,"已從預收扣"],["115.08.21","郵資","掛號郵資",0,102,"已從預收扣"],["115.11.05","交通費","高鐵往返台北",0,1490,"未請款"]]},
+   {label:"114.06.01–115.05.31", end:new Date(2026,4,31), buy:10,
+    hours:[["114.07.10","合約審閱","租賃合約審閱","amy",4],["114.11.02","開會","股東會議","amy",3],["115.03.18","合約審閱","承攬合約修改","ben",3]], fees:[]}
+  ]},
+ {name:"範例建設股份有限公司", owner:"ben", contact:"張協理", plan:{hours:20, rate:4500}, over:4500,
+  periods:[{label:"115.01.01–115.12.31", end:new Date(2026,11,31), buy:20,
+    hours:[["115.02.10","諮詢","工地糾紛諮詢","ben",2],["115.05.06","合約審閱","分包合約","ben",6],["115.09.01","開會","協調會議","cindy",4]],
+    fees:[["115.05.07","交通費","工地會勘",0,820,"未請款"]]}]},
+ {name:"範例開發有限公司", owner:"cindy", contact:"吳特助", plan:{hours:10, rate:5000}, over:4500,
+  periods:[{label:"114.12.15–115.12.14", end:new Date(2026,11,14), buy:10,
+    hours:[["115.01.20","合約審閱","買賣契約","cindy",3],["115.04.02","律師函","催告函","cindy",2],["115.07.15","開會","股東協議","amy",4],["115.10.08","諮詢","電話諮詢","cindy",2]],
+    fees:[["115.04.03","存證信函","存證信函費",0,345,"客戶已付"]]}]}
+];
+
+/* ===== 工具 ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money = n => Number(n||0).toLocaleString("zh-TW");
+const days = d => Math.ceil((d - TODAY)/86400000);
+const caseNo = c => `${c.owner}-${ROC}-${c.seq}-${c.no || "（所號）"}`;
+function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2800)}
+function openModal(html){$("#modal").innerHTML=html;$("#ov").hidden=false;$("#modal").scrollIntoView({block:"start"})}
+function closeModal(){$("#ov").hidden=true;$("#modal").innerHTML=""}
+$("#ov").addEventListener("click",e=>{if(e.target.id==="ov")closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#ov").hidden)closeModal()});
+const FEE_ST = ["未請款","已請款","客戶已付","不向客戶請款"];
+function stTag(s){const cls={"未請款":"warn","已請款":"blue","客戶已付":"ok","不向客戶請款":"","已收":"ok","已從預收扣":"ok"}[s]??"";return `<span class="tag ${cls}">${esc(s)}</span>`}
+function stBtn(s,attrs){const cls={"未請款":"warn","已請款":"blue","客戶已付":"ok"}[s]??"";return FEE_ST.includes(s)?`<button class="tag ${cls}" ${attrs} title="點一下切換狀態">${esc(s)}</button>`:stTag(s)}
+const nextSt = s => FEE_ST[(FEE_ST.indexOf(s)+1)%FEE_ST.length];
+
+/* ===== 路由 ===== */
+let state = {page:"cases", filter:"全部", caseId:null, client:null, advIdx:null, period:0, advFilter:"all", q:""};
+function go(p){Object.assign(state,p);render();window.scrollTo(0,0)}
+document.querySelectorAll("nav.side button").forEach(b=>b.onclick=()=>go({page:b.dataset.page,caseId:null,client:null,advIdx:null,period:0,q:""}));
+function render(){
+  document.querySelectorAll("nav.side button").forEach(b=>b.setAttribute("aria-current",b.dataset.page===state.page?"page":"false"));
+  const m=$("#main");
+  if(state.page==="cases") m.innerHTML = state.caseId ? vCase() : vCases();
+  if(state.page==="clients") m.innerHTML = vClients();
+  if(state.page==="adv") m.innerHTML = state.advIdx!=null ? vAdvDetail() : vAdv();
+  if(state.page==="fees") m.innerHTML = vFees();
+}
+
+/* ===== 案件中心 ===== */
+function vCases(){
+  const sts=["全部","諮詢中","評估中","進行中","已結案"];
+  const cnt=s=>s==="全部"?cases.length:cases.filter(c=>c.status===s).length;
+  const list=cases.filter(c=>state.filter==="全部"||c.status===state.filter);
+  return `<div class="row"><div><h1>案件中心</h1><p class="sub">沒有「待結案」：進行中直接到已結案 <span class="ref">2-1</span></p></div><div class="spacer"></div>
+  <button class="btn primary" onclick="newCase()">＋ 新建案件</button></div>
+  <div class="chips">${sts.map(s=>`<button class="chip" aria-pressed="${state.filter===s}" onclick="go({filter:'${s}'})">${s}<b>${cnt(s)}</b></button>`).join("")}</div>
+  <div class="card tbl"><table><thead><tr><th>案件編號 <span class="ref">1-3</span></th><th>案由</th><th>當事人</th><th>類型</th><th>法院／股別</th><th>狀態</th></tr></thead><tbody>
+  ${list.map(c=>`<tr class="click" onclick="go({caseId:${c.id}})"><td style="white-space:nowrap"><b>${esc(caseNo(c))}</b></td><td>${esc(c.reason)}</td><td>${esc(c.client)}</td><td>${esc(c.type)}</td><td>${esc(c.court||"—")}${c.unit?"／"+esc(c.unit):""}</td><td>${c.status==="已結案"?'<span class="tag">已結案</span>':'<span class="tag blue">'+esc(c.status)+'</span>'}</td></tr>`).join("")||'<tr><td colspan="6" class="note">沒有案件</td></tr>'}
+  </tbody></table></div>`;
+}
+function newCase(){
+  openModal(`<h2>新建案件</h2><p class="note">新增、修改案件都<b>不會寄 email 通知</b> <span class="ref">1-9</span></p>
+  <div class="grid" style="margin-top:10px">
+   <label class="f"><span>所號 <span class="ref">1-1</span></span><input id="nc_no" placeholder="律所自己填" oninput="ncPreview()"></label>
+   <label class="f"><span>案由 <span class="ref">1-2</span></span><input id="nc_reason" placeholder="例：給付票款"></label>
+   <label class="f"><span>案件類型 <span class="ref">1-4</span></span><select id="nc_type" onchange="ncPreview()"><option>民事</option><option>刑事</option><option>行政訴訟</option><option>非訟</option><option>其他</option><option>法律顧問</option></select></label>
+   <label class="f"><span>案件來源 <span class="ref">1-7</span></span><input id="nc_src" placeholder="例：舊客戶介紹"></label>
+   <label class="f"><span>法院 <span class="ref">1-5</span></span><input id="nc_court" placeholder="自己打字，例：臺灣臺中地方法院"></label>
+   <label class="f">法院案號<input id="nc_cno" placeholder="例：115年度訴字第123號"></label>
+   <label class="f"><span>股別 <span class="ref">1-6</span></span><input id="nc_unit" placeholder="例：仁股"></label>
+   <label class="f"><span>當事人 <span class="req">*</span></span><input id="nc_client" placeholder="例：王小明"></label>
+   <div class="contact-box"><div class="row"><b style="font-size:14px">聯絡人</b><span class="ref">1-8</span></div>
+     <div id="nc_contacts"></div>
+     <button class="btn small" onclick="addContact()" style="margin-top:6px">＋ 新增聯絡人</button></div>
+  </div>
+  <div class="caseno"><div class="note">按「建立案件」後，案件編號會是：</div><code id="nc_out"></code>
+   <div class="note">承辦人（建立案件者的帳號 ${ME}）－民國年－流水號（系統自動）－所號</div></div>
+  <div id="nc_msg" class="note" style="color:var(--bad);margin-top:8px"></div>
+  <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="createCase()">建立案件</button></div>`);
+  addContact(); ncPreview();
+}
+function addContact(){
+  const box=$("#nc_contacts"), n=box.children.length+1;
+  box.insertAdjacentHTML("beforeend",`<div class="contact"><label class="f">聯絡人 ${n} 姓名<input data-k="name"></label><label class="f">手機<input data-k="mobile" inputmode="tel"></label><label class="f">市話<input data-k="tel" inputmode="tel"></label><label class="f">email<input data-k="email" type="email"></label></div>`);
+}
+function ncPreview(){ $("#nc_out").textContent=`${ME}-${ROC}-${String(seq).padStart(4,"0")}-${$("#nc_no").value.trim()||"（所號）"}` }
+function createCase(){
+  const v=id=>$(id).value.trim();
+  if(!v("#nc_no")||!v("#nc_client")){$("#nc_msg").textContent="請填寫「所號」和「當事人」。";return}
+  const contacts=[...document.querySelectorAll("#nc_contacts .contact")].map(r=>{const o={};r.querySelectorAll("input").forEach(i=>o[i.dataset.k]=i.value.trim());return o}).filter(o=>o.name||o.mobile||o.tel||o.email);
+  const c={id:Date.now(),owner:ME,seq:String(seq++).padStart(4,"0"),no:v("#nc_no"),reason:v("#nc_reason")||"（未填）",type:$("#nc_type").value,status:"進行中",source:v("#nc_src"),client:v("#nc_client"),court:v("#nc_court"),courtNo:v("#nc_cno"),unit:v("#nc_unit"),contacts,fees:[],bill:{fee:0,prepay:0}};
+  cases.unshift(c);
+  if(c.type==="法律顧問"&&!adv.find(a=>a.name===c.client)){
+    adv.push({name:c.client,owner:ME,contact:contacts[0]?.name||"",plan:{hours:10,rate:5000},over:4500,periods:[{label:"115.11.19–116.11.18",end:new Date(2027,10,18),buy:10,hours:[],fees:[]}]});
+    c.adv=c.client;
+    closeModal(); go({page:"cases",caseId:c.id,filter:"全部"}); toast("已建立案件，並自動建立「"+c.client+"」的法律顧問時數表（3-2）");
+  } else { closeModal(); go({page:"cases",caseId:c.id,filter:"全部"}); toast("已建立案件 "+caseNo(c)+"（不寄 email 通知）"); }
+}
+function feeSum(fs){let unb=0,unpaid=0,pre=0;fs.forEach(f=>{if(f.st==="未請款")unb+=f.out;if(f.st==="未請款"||f.st==="已請款")unpaid+=f.out;if(f.cat==="預收")pre+=f.inc});return {unb,unpaid,pre}}
+function vCase(){
+  const c=cases.find(x=>x.id===state.caseId); if(!c) return vCases();
+  const s=feeSum(c.fees), lit=LIT.includes(c.type);
+  return `<button class="back" onclick="go({caseId:null})">← 回案件中心</button>
+  <div class="row"><div><h1>${esc(caseNo(c))}</h1><p class="sub">${esc(c.reason)}｜${esc(c.client)}｜${esc(c.type)}</p></div><div class="spacer"></div>
+   <label class="f" style="flex-direction:row;align-items:center;gap:6px">狀態<select onchange="setStatus(${c.id},this.value)">${["諮詢中","評估中","進行中","已結案"].map(x=>`<option ${x===c.status?"selected":""}>${x}</option>`).join("")}</select></label></div>
+  <div class="card"><div class="grid">
+   <div class="kv"><span>所號</span>${esc(c.no)}</div><div class="kv"><span>案由</span>${esc(c.reason)}</div>
+   <div class="kv"><span>案件來源</span>${esc(c.source||"—")}</div><div class="kv"><span>法院</span>${esc(c.court||"—")}</div>
+   <div class="kv"><span>法院案號</span>${esc(c.courtNo||"—")}</div><div class="kv"><span>股別</span>${esc(c.unit||"—")}</div>
+  </div></div>
+  <div class="card"><b>聯絡人</b> <span class="ref">1-8</span>
+   <div class="tbl"><table style="margin-top:6px"><thead><tr><th>姓名</th><th>手機</th><th>市話</th><th>email</th></tr></thead><tbody>
+   ${c.contacts.map(p=>`<tr><td>${esc(p.name||"—")}</td><td>${esc(p.mobile||"—")}</td><td>${esc(p.tel||"—")}</td><td>${esc(p.email||"—")}</td></tr>`).join("")||'<tr><td colspan="4" class="note">尚未填寫</td></tr>'}
+   </tbody></table></div></div>
+  <div class="card"><div class="row"><b>費用與雜支</b><span class="ref">4-1</span><span class="ref">4-3</span><div class="spacer"></div>
+    <button class="btn small" onclick="editCaseFee(${c.id},-1)">＋ 新增費用</button>
+    <button class="btn small" ${lit?"":"disabled title='請款單跟著訴訟案件'"} onclick="docInvoice(${c.id})">產生請款單 <span class="ref">5-2</span></button>
+    <button class="btn small primary" onclick="docReceipt(${c.id})">開收據 <span class="ref">5-3</span></button></div>
+   <div class="tiles"><div class="tile"><span>預收款</span><b>${money(s.pre)}</b></div><div class="tile"><span>客戶未付</span><b>${money(s.unpaid)}</b></div><div class="tile"><span>還沒請款</span><b>${money(s.unb)}</b></div></div>
+   <div class="tbl"><table><thead><tr><th>日期</th><th>類別</th><th>說明</th><th class="n">預收／收款</th><th class="n">支出</th><th>狀態（點一下切換）</th><th></th></tr></thead><tbody>
+   ${c.fees.map((f,i)=>`<tr><td>${esc(f.d)}</td><td>${esc(f.cat)}</td><td>${esc(f.desc)}</td><td class="n">${f.inc?money(f.inc):""}</td><td class="n">${f.out?money(f.out):""}</td><td>${stBtn(f.st,`onclick="cycleCaseFee(${c.id},${i})"`)}</td><td class="n"><button class="btn small" onclick="editCaseFee(${c.id},${i})">編輯</button></td></tr>`).join("")||'<tr><td colspan="7" class="note">還沒有費用紀錄</td></tr>'}
+   </tbody></table></div>
+   ${lit?"":'<p class="note">這個案件不是訴訟案件，所以沒有請款單。</p>'}</div>`;
+}
+function editCaseFee(id,i){
+  const c=cases.find(x=>x.id===id);
+  const f = i>=0 ? c.fees[i] : {d:`${ROC}.11.19`,cat:"交通費",desc:"",inc:0,out:0,st:"未請款"};
+  const cats=["預收","交通費","郵資","存證信函","裁判費","影印","其他"], sts=["未請款","已請款","客戶已付","不向客戶請款","已收","已從預收扣"];
+  const o=(l,v)=>(l.includes(v)?l:[v,...l]).map(x=>`<option ${x===v?"selected":""}>${esc(x)}</option>`).join("");
+  openModal(`<h2>${i>=0?"修改":"新增"}費用</h2><p class="note">${esc(caseNo(c))}｜${esc(c.client)}</p>
+  <div class="grid" style="margin-top:10px">
+   <label class="f">日期<input id="ed_d" value="${esc(f.d)}" placeholder="例：115.11.19"></label>
+   <label class="f">類別<select id="ed_c">${o(cats,f.cat)}</select></label>
+   <label class="f full">說明<input id="ed_t" value="${esc(f.desc)}" placeholder="例：閱卷影印"></label>
+   <label class="f">預收／收款金額<input id="ed_in" type="number" min="0" step="1" value="${f.inc||""}" placeholder="0"></label>
+   <label class="f">支出（代墊）金額<input id="ed_out" type="number" min="0" step="1" value="${f.out||""}" placeholder="0"></label>
+   <label class="f">狀態<select id="ed_s">${o(sts,f.st)}</select></label>
+  </div>
+  <div id="ed_msg" class="note" style="color:var(--bad);margin-top:8px"></div>
+  <div class="row" style="margin-top:12px">${i>=0?`<button class="btn" style="color:var(--bad)" onclick="delCaseFee(${id},${i},this)">刪除這筆</button>`:""}
+  <div class="spacer"></div><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="saveCaseFee(${id},${i})">儲存</button></div>`);
+}
+function saveCaseFee(id,i){
+  const c=cases.find(x=>x.id===id), d=$("#ed_d").value.trim(), t=$("#ed_t").value.trim(), inc=+$("#ed_in").value||0, out=+$("#ed_out").value||0;
+  if(!d||!t){$("#ed_msg").textContent="請填寫日期和說明。";return}
+  if(inc<0||out<0||(!inc&&!out)){$("#ed_msg").textContent="請填寫「預收／收款」或「支出」其中一個金額。";return}
+  const row={d,cat:$("#ed_c").value,desc:t,inc,out,st:$("#ed_s").value};
+  if(i>=0) c.fees[i]=row; else c.fees.push(row);
+  c.fees.sort((a,b)=>a.d.localeCompare(b.d));
+  closeModal(); render(); toast(i>=0?"已修改費用":"已新增費用");
+}
+function delCaseFee(id,i,btn){
+  if(!btn.dataset.sure){btn.dataset.sure="1";btn.textContent="確定刪除？再按一次";return}
+  cases.find(x=>x.id===id).fees.splice(i,1); closeModal(); render(); toast("已刪除");
+}
+function setStatus(id,v){const c=cases.find(x=>x.id===id);c.status=v;toast("狀態改為「"+v+"」");render()}
+function cycleCaseFee(id,i){const f=cases.find(x=>x.id===id).fees[i];f.st=nextSt(f.st);render()}
+
+/* ===== 當事人 ===== */
+function vClients(){
+  if(state.client){
+    const list=cases.filter(c=>c.client===state.client);
+    return `<button class="back" onclick="go({client:null})">← 回當事人</button><h1>${esc(state.client)}</h1><p class="sub">這位當事人的所有案件，共 ${list.length} 件 <span class="ref">1-10</span></p>
+    <div class="card tbl"><table><thead><tr><th>案件編號</th><th>案由</th><th>類型</th><th>狀態</th></tr></thead><tbody>
+    ${list.map(c=>`<tr class="click" onclick="go({page:'cases',caseId:${c.id}})"><td><b>${esc(caseNo(c))}</b></td><td>${esc(c.reason)}</td><td>${esc(c.type)}</td><td>${esc(c.status)}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  const names=[...new Set(cases.map(c=>c.client))];
+  return `<h1>當事人</h1><p class="sub">點當事人，看他的所有案件 <span class="ref">1-10</span></p>
+  <div class="card tbl"><table><thead><tr><th>當事人</th><th>主要聯絡人</th><th class="n">案件數</th></tr></thead><tbody>
+  ${names.map(n=>{const cs=cases.filter(c=>c.client===n);const p=cs[0].contacts[0]||{};return `<tr class="click" onclick="go({client:'${esc(n)}'})"><td><b>${esc(n)}</b></td><td>${esc(p.name||"—")} ${esc(p.mobile||"")}</td><td class="n">${cs.length}</td></tr>`}).join("")}
+  </tbody></table></div>`;
+}
+
+/* ===== 法律顧問 ===== */
+function advStat(a,pi=0){const p=a.periods[pi];const used=p.hours.reduce((s,h)=>s+h[4],0);const out=p.fees.reduce((s,f)=>s+f[4],0);const unb=p.fees.filter(f=>f[5]==="未請款").reduce((s,f)=>s+f[4],0);const pre=p.fees.reduce((s,f)=>s+f[3],0);return {p,used,left:p.buy-used,out,unb,pre,d:days(p.end)}}
+function vAdv(){
+  const rows=adv.map((a,i)=>({a,i,s:advStat(a)}));
+  const due=rows.filter(r=>r.s.d<=60&&r.s.d>=0);
+  const f=state.advFilter;
+  const shown=rows.filter(r=>f==="all"||(f==="due"&&r.s.d<=60)||(f==="over"&&r.s.left<0)||(f==="bill"&&r.s.unb>0));
+  return `<h1>法律顧問</h1><p class="sub">取代原本的法律顧問時數表 Excel，只有律所內部看得到 <span class="ref">3-3</span></p>
+  ${due.map(r=>`<div class="alert">⏰ <b>${esc(r.a.name)}</b> 的合約 ${r.s.d<=30?"<b>30 天內</b>":"<b>60 天內</b>"}到期（還有 ${r.s.d} 天，${r.s.p.label.split("–")[1]}），請準備續約。 <span class="ref">3-5</span></div>`).join("")}
+  <div class="chips">${[["all","全部"],["due","60 天內到期"],["over","時數用超"],["bill","有待請款"]].map(([k,t])=>`<button class="chip" aria-pressed="${f===k}" onclick="go({advFilter:'${k}'})">${t}</button>`).join("")}</div>
+  <div class="card tbl"><table><thead><tr><th>客戶</th><th>承辦人員 <span class="ref">3-8</span></th><th>本期合約</th><th class="n">時數（已用／已購）</th><th class="n">剩餘時數</th><th>到期日</th><th class="n">代墊款</th><th class="n">待請款</th></tr></thead><tbody>
+  ${shown.map(({a,i,s})=>`<tr class="click" onclick="go({advIdx:${i},period:0,q:''})"><td><b>${esc(a.name)}</b></td><td>${esc(a.owner)}</td><td>${s.p.label}</td><td class="n">${s.used}／${s.p.buy}</td><td class="n">${s.left<0?`<span class="tag bad">超 ${-s.left}</span>`:s.left}</td><td>${s.p.label.split("–")[1]}${s.d<=60?` <span class="tag warn">${s.d} 天</span>`:""}</td><td class="n">${money(s.out)}</td><td class="n">${s.unb?`<span class="tag warn">${money(s.unb)}</span>`:"0"}</td></tr>`).join("")||'<tr><td colspan="8" class="note">沒有符合的客戶</td></tr>'}
+  </tbody></table></div>
+  <p class="note">新增案件時「案件類型」選「法律顧問」，客戶會自動出現在這裡，並建好時數表 <span class="ref">3-2</span></p>`;
+}
+function vAdvDetail(){
+  const a=adv[state.advIdx], s=advStat(a,state.period), q=state.q.trim();
+  const hit=r=>!q||r.join(" ").includes(q);
+  const hours=s.p.hours.filter(hit), fees=s.p.fees.filter(hit);
+  return `<button class="back" onclick="go({advIdx:null})">← 回法律顧問</button>
+  <div class="row"><div><h1>${esc(a.name)}</h1><p class="sub">承辦人員：${esc(a.owner)}｜聯絡人：${esc(a.contact||"—")}</p></div><div class="spacer"></div>
+   <button class="btn" onclick="toast('示範：會下載這一期的時數表 Excel（3-4）')">匯出 Excel</button>
+   <button class="btn" onclick="toast('示範：會下載這一期的時數表 PDF（3-4）')">匯出 PDF</button>
+   <button class="btn primary" onclick="docQuote(${state.advIdx})">匯出報價單 <span class="ref" style="color:#fff;border-color:#fff">3-9</span></button></div>
+  <div class="row" style="margin:8px 0"><label class="f" style="flex-direction:row;align-items:center;gap:6px">合約期別 <span class="ref">3-7</span><select onchange="go({period:+this.value})">${a.periods.map((p,i)=>`<option value="${i}" ${i===state.period?"selected":""}>${p.label}${i===0?"（本期）":""}</option>`).join("")}</select></label>
+   <div class="spacer"></div><input class="search" placeholder="搜尋工時或費用…" value="${esc(state.q)}" oninput="state.q=this.value;clearTimeout(window._qt);window._qt=setTimeout(()=>{render();const i=document.querySelector('.search');i.focus();i.setSelectionRange(i.value.length,i.value.length)},250)"></div>
+  <div class="tiles"><div class="tile"><span>已購時數</span><b>${s.p.buy}</b></div><div class="tile"><span>已用時數</span><b>${s.used}</b></div><div class="tile"><span>剩餘時數</span><b style="color:${s.left<0?"var(--bad)":"inherit"}">${s.left}</b></div><div class="tile"><span>費用支出</span><b>${money(s.out)}</b></div><div class="tile"><span>待請款</span><b>${money(s.unb)}</b></div></div>
+  <p class="note">結算這一期時，用了幾小時、花了多少費用都在同一頁 <span class="ref">3-6</span></p>
+  <div class="card"><div class="row"><b>工時紀錄</b><span class="ref">3-3</span><div class="spacer"></div><button class="btn small primary" onclick="editHour(-1)">＋ 新增工時</button></div>
+   <div class="tbl"><table style="margin-top:6px"><thead><tr><th>日期</th><th>類別</th><th>工作內容</th><th class="n">時數</th><th></th></tr></thead><tbody>
+   ${hours.map(h=>`<tr><td>${esc(h[0])}</td><td>${esc(h[1])}</td><td>${esc(h[2])}</td><td class="n">${h[4]}</td><td class="n"><button class="btn small" onclick="editHour(${s.p.hours.indexOf(h)})">編輯</button></td></tr>`).join("")||'<tr><td colspan="5" class="note">沒有資料</td></tr>'}
+   </tbody></table></div></div>
+  <div class="card"><div class="row"><b>費用紀錄</b><span class="ref">3-3</span><div class="spacer"></div><button class="btn small primary" onclick="editFee(-1)">＋ 新增費用</button></div>
+   <div class="tbl"><table style="margin-top:6px"><thead><tr><th>日期</th><th>類別</th><th>說明</th><th class="n">預收／收款</th><th class="n">支出</th><th>狀態</th><th></th></tr></thead><tbody>
+   ${fees.map(f=>{const idx=s.p.fees.indexOf(f);return `<tr><td>${esc(f[0])}</td><td>${esc(f[1])}</td><td>${esc(f[2])}</td><td class="n">${f[3]?money(f[3]):""}</td><td class="n">${f[4]?money(f[4]):""}</td><td>${stBtn(f[5],`onclick="cycleAdvFee(${idx})"`)}</td><td class="n"><button class="btn small" onclick="editFee(${idx})">編輯</button></td></tr>`}).join("")||'<tr><td colspan="7" class="note">沒有資料</td></tr>'}
+   </tbody></table></div></div>`;
+}
+/* ---- 法律顧問：工時、費用的新增／修改／刪除（3-3） ---- */
+const TODAY_ROC = `${ROC}.11.19`;
+const H_CATS = ["諮詢","合約審閱","律師函","開會","書狀","其他"];
+const F_CATS = ["預收","交通費","郵資","存證信函","裁判費","影印","其他"];
+const F_STS = ["未請款","已請款","客戶已付","不向客戶請款","已收","已從預收扣"];
+const opt = (list,v) => (list.includes(v)?list:[v,...list]).map(x=>`<option ${x===v?"selected":""}>${esc(x)}</option>`).join("");
+function curPeriod(){return adv[state.advIdx].periods[state.period]}
+function formFoot(kind,i){
+  return `<div id="ed_msg" class="note" style="color:var(--bad);margin-top:8px"></div>
+  <div class="row" style="margin-top:12px">${i>=0?`<button class="btn" id="ed_del" style="color:var(--bad)" onclick="delRow('${kind}',${i},this)">刪除這筆</button>`:""}
+  <div class="spacer"></div><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="save${kind}(${i})">儲存</button></div>`;
+}
+function editHour(i){
+  const h = i>=0 ? curPeriod().hours[i] : [TODAY_ROC,"諮詢","",ME,1];
+  openModal(`<h2>${i>=0?"修改":"新增"}工時</h2><p class="note">${esc(adv[state.advIdx].name)}｜${curPeriod().label}</p>
+  <div class="grid" style="margin-top:10px">
+   <label class="f">日期<input id="ed_d" value="${esc(h[0])}" placeholder="例：115.11.19"></label>
+   <label class="f">類別<select id="ed_c">${opt(H_CATS,h[1])}</select></label>
+   <label class="f full">工作內容<input id="ed_t" value="${esc(h[2])}" placeholder="例：保密合約審閱"></label>
+   <label class="f">時數<input id="ed_h" type="number" min="0.5" step="0.5" value="${h[4]}"></label>
+  </div>${formFoot("Hour",i)}`);
+}
+function saveHour(i){
+  const d=$("#ed_d").value.trim(), t=$("#ed_t").value.trim(), hr=parseFloat($("#ed_h").value);
+  if(!d||!t||!(hr>0)){$("#ed_msg").textContent="請填寫日期、工作內容，時數要大於 0。";return}
+  const row=[d,$("#ed_c").value,t,ME,hr], list=curPeriod().hours;
+  if(i>=0) list[i]=row; else list.push(row);
+  list.sort((a,b)=>a[0].localeCompare(b[0]));
+  closeModal(); render(); toast(i>=0?"已修改工時，時數已重新計算":"已新增工時，時數已重新計算");
+}
+function editFee(i){
+  const f = i>=0 ? curPeriod().fees[i] : [TODAY_ROC,"交通費","",0,0,"未請款"];
+  openModal(`<h2>${i>=0?"修改":"新增"}費用</h2><p class="note">${esc(adv[state.advIdx].name)}｜${curPeriod().label}</p>
+  <div class="grid" style="margin-top:10px">
+   <label class="f">日期<input id="ed_d" value="${esc(f[0])}" placeholder="例：115.11.19"></label>
+   <label class="f">類別<select id="ed_c">${opt(F_CATS,f[1])}</select></label>
+   <label class="f full">說明<input id="ed_t" value="${esc(f[2])}" placeholder="例：高鐵往返台北"></label>
+   <label class="f">預收／收款金額<input id="ed_in" type="number" min="0" step="1" value="${f[3]||""}" placeholder="0"></label>
+   <label class="f">支出金額<input id="ed_out" type="number" min="0" step="1" value="${f[4]||""}" placeholder="0"></label>
+   <label class="f">狀態<select id="ed_s">${opt(F_STS,f[5])}</select></label>
+  </div>${formFoot("Fee",i)}`);
+}
+function saveFee(i){
+  const d=$("#ed_d").value.trim(), t=$("#ed_t").value.trim(), inc=+$("#ed_in").value||0, out=+$("#ed_out").value||0;
+  if(!d||!t){$("#ed_msg").textContent="請填寫日期和說明。";return}
+  if(inc<0||out<0||(!inc&&!out)){$("#ed_msg").textContent="請填寫「預收／收款」或「支出」其中一個金額。";return}
+  const row=[d,$("#ed_c").value,t,inc,out,$("#ed_s").value], list=curPeriod().fees;
+  if(i>=0) list[i]=row; else list.push(row);
+  list.sort((a,b)=>a[0].localeCompare(b[0]));
+  closeModal(); render(); toast(i>=0?"已修改費用，金額已重新計算":"已新增費用，金額已重新計算");
+}
+function delRow(kind,i,btn){
+  if(!btn.dataset.sure){btn.dataset.sure="1";btn.textContent="確定刪除？再按一次";return}
+  (kind==="Hour"?curPeriod().hours:curPeriod().fees).splice(i,1);
+  closeModal(); render(); toast("已刪除");
+}
+function cycleAdvFee(i){const f=adv[state.advIdx].periods[state.period].fees[i];f[5]=nextSt(f[5]);render()}
+
+/* ===== 費用與雜支總覽 ===== */
+function vFees(){
+  const rows=[];
+  cases.forEach(c=>c.fees.forEach((f,i)=>rows.push({client:c.client,where:caseNo(c),d:f.d,cat:f.cat,desc:f.desc,amt:f.out,st:f.st,go:`go({page:'cases',caseId:${c.id}})`})));
+  adv.forEach((a,ai)=>a.periods.forEach((p,pi)=>p.fees.forEach(f=>rows.push({client:a.name,where:"法律顧問 "+p.label,d:f[0],cat:f[1],desc:f[2],amt:f[4],st:f[5],go:`go({page:'adv',advIdx:${ai},period:${pi},q:''})`}))));
+  const unb=rows.filter(r=>r.st==="未請款");
+  const byClient={};unb.forEach(r=>byClient[r.client]=(byClient[r.client]||0)+r.amt);
+  return `<h1>費用與雜支</h1><p class="sub">一般案件和法律顧問的費用一起看，每一筆都知道是哪位客戶、哪個案件 <span class="ref">4-2</span><span class="ref">4-5</span></p>
+  <div class="card"><b>還沒請款的費用</b> <span class="ref">4-4</span>
+   <div class="tiles">${Object.entries(byClient).map(([k,v])=>`<div class="tile"><span>${esc(k)}</span><b>${money(v)}</b></div>`).join("")||'<p class="note">目前沒有未請款的費用</p>'}</div></div>
+  <div class="card tbl"><table><thead><tr><th>日期</th><th>客戶</th><th>案件／顧問期間</th><th>類別</th><th>說明</th><th class="n">金額</th><th>狀態</th></tr></thead><tbody>
+  ${rows.filter(r=>r.amt>0).sort((a,b)=>b.d.localeCompare(a.d)).map(r=>`<tr class="click" onclick="${r.go}"><td>${r.d}</td><td>${esc(r.client)}</td><td>${esc(r.where)}</td><td>${esc(r.cat)}</td><td>${esc(r.desc)}</td><td class="n">${money(r.amt)}</td><td>${stTag(r.st)}</td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+
+/* ===== 文件產出（請款單／收據／報價單） ===== */
+const F = (v,w) => `<span class="fld" contenteditable="true" spellcheck="false"${w?` style="min-width:${w}"`:""}>${esc(v)}</span>`;
+const head = () => `<div class="firm">${FIRM.name}　${FIRM.en}</div><div class="addr">${FIRM.addr}　TEL：${FIRM.tel}　統編：${FIRM.taxid}</div>`;
+const dateLine = () => `<div class="date"><span>中華民國</span><span>${F(ROC)}年</span><span>${F(11)}月</span><span>${F(19)}日</span></div>`;
+const SEAL = `<div class="seal">事務所印鑑<br>浮水印<br>（待律所提供）</div>`;
+const SEAL_AT = `<div style="position:relative;height:0"><div class="seal" style="bottom:-40px">事務所印鑑<br>浮水印<br>（待律所提供）</div></div>`;
+function docShell(title, refs, paper, extra="", sign=false){
+  openModal(`<div class="row"><h2>${title}</h2>${refs}<div class="spacer"></div><button class="btn small" onclick="closeModal()">關閉</button></div>
+  <p class="note">黃色底的地方都是系統帶入的資料，<b>直接點進去就能修改</b>，改好再下載或列印 <span class="ref">5-1</span></p>
+  ${extra}
+  <div class="toolbar"><button class="btn" onclick="toast('示範：正式系統會直接下載 PDF 電子檔')">下載電子檔</button><button class="btn primary" onclick="window.print()">列印</button><span class="spacer"></span>${sign?`<button class="btn" onclick="showSign()">產生同意函回簽連結 <span class="ref">5-7</span></button>`:""}</div>
+  <div class="sign-box" id="signBox">${qrSvg()}<div><b>同意函回簽</b><div class="note">客戶用手機掃 QR code，或點下面的連結，就能線上簽同意函。</div><div style="font-family:Consolas,monospace;font-size:13px;margin-top:4px">https://law.example.com/sign/ab12cd（示範）</div></div></div>
+  <div id="paperWrap">${paper}</div>`);
+}
+function showSign(){$("#signBox").classList.toggle("show")}
+function qrSvg(){
+  let r="", x=7;
+  for(let i=0;i<21;i++)for(let j=0;j<21;j++){
+    const inF=(i<7&&j<7)||(i<7&&j>13)||(i>13&&j<7);
+    let on;
+    if(inF){const a=i>13?i-14:i,b=j>13?j-14:j;on=a===0||a===6||b===0||b===6||(a>1&&a<5&&b>1&&b<5)}
+    else{x=(x*73+41)%997;on=x%2===1}
+    if(on)r+=`<rect x="${j}" y="${i}" width="1" height="1"/>`;
+  }
+  return `<svg class="qr" viewBox="-1 -1 23 23" fill="currentColor" aria-label="QR code 示意">${r}</svg>`;
+}
+
+function docInvoice(id){
+  const c=cases.find(x=>x.id===id), total=(c.bill.fee||0)+(c.bill.prepay||0);
+  const paper=(kind)=>`<div class="paper">${head()}<h3>請款單</h3>
+   <p>受文者：${F(c.client,"8em")}</p>
+   <p>主旨：謹檢陳本所提供法律服務事宜之服務範圍及計費方式，請查照。</p>
+   <p>說明：</p>
+   <p>一、服務範圍：</p>
+   <p class="ind">（一）${F(`台端${c.reason}事件（案號：${c.court}${c.courtNo}${c.unit}），受台端委任為${c.type}訴訟代理人。`,"20em")}</p>
+   <p>二、律師服務費用：新台幣（下同）${F(money(c.bill.fee))}元，交通費用與行政雜支實支實付，預收${F(money(c.bill.prepay))}元。</p>
+   <p>三、${kind==="法人"?`敬請貴公司將上開費用共計${F(money(total))}元匯入以下帳號，並請貴公司依法辦理扣繳手續，俾利本所作業。`:`敬請台端將上開費用共計${F(money(total))}元匯入以下帳號，俾利本所作業。`}</p>
+   <p class="ind">銀行：玉山銀行五權分行｜戶名：典範法律事務所｜帳號：（依律所範本帶入）</p>
+   <p>四、以上，如有任何問題，敬請與本所${F("陳秘書（分機 12）")}聯繫。</p>${SEAL_AT}${dateLine()}</div>`;
+  docShell("請款單","<span class='ref'>5-2</span><span class='ref'>5-6</span>",paper("自然人"),
+   `<div class="row note">客戶類型：<span class="seg"><button aria-pressed="true" onclick="invKind(this,'自然人',${id})">自然人</button><button aria-pressed="false" onclick="invKind(this,'法人',${id})">法人</button></span>（法人版多一句「依法辦理扣繳」）</div>`);
+  window._inv=paper;
+}
+function invKind(btn,k){btn.parentNode.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b===btn));$("#paperWrap").innerHTML=window._inv(k)}
+
+function docReceipt(id){
+  const c=cases.find(x=>x.id===id);
+  const unb=c.fees.filter(f=>f.st==="未請款"||f.st==="已請款").reduce((s,f)=>s+f.out,0);
+  const amt=(c.bill.fee||0)+unb;
+  const paper=(kind)=>`<div class="paper">${SEAL}<h3>${kind==="存根"?"收 據 存 根":"收　　據"}</h3>
+   <p>茲收到　${F(c.client,"10em")}</p>
+   <p class="ind">新台幣：${F(money(amt),"6em")}元整</p>
+   <p>為　${F(c.reason,"10em")}　之法律服務費</p>
+   <p class="ind" style="margin-top:14px">此　據</p>
+   <p style="font-size:11px;margin-top:14px">如有錯誤溢還缺補</p>
+   <p class="ind">${FIRM.name}　${F("","6em")}律師</p>
+   <p class="ind">地址：台中市西區五權路 2 之 106 號 16 樓</p>
+   <p class="ind">電話：04-23767268　統編：${FIRM.taxid}</p>${dateLine()}</div>`;
+  docShell("收據","<span class='ref'>5-3</span><span class='ref'>5-6</span>",paper("收據"),
+   `<div class="row note">要產生哪一張：<span class="seg"><button aria-pressed="true" onclick="rcKind(this,'收據')">收據（給當事人）</button><button aria-pressed="false" onclick="rcKind(this,'存根')">收據存根（事務所留底）</button></span><span class="ref">5-4</span></div>
+    <p class="note">已帶入：當事人姓名、案由；金額＝律師費 ${money(c.bill.fee)} ＋ 這個案件還沒收的費用 ${money(unb)}，可以直接改。律師姓名請自己填。</p>`);
+  window._rc=paper;
+}
+function rcKind(btn,k){btn.parentNode.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b===btn));$("#paperWrap").innerHTML=window._rc(k)}
+
+function docQuote(i){
+  const a=adv[i];
+  const paper=`<div class="paper">${head()}<h3>法律顧問服務報價函</h3>
+   <p>受文者：${F(a.name,"10em")}</p>
+   <p>主旨：謹檢陳本所提供法律服務事宜之服務範圍及計費方式如說明，請查照。</p>
+   <p>說明：</p>
+   <p>一、顧問契約年度之基本服務公費：</p>
+   <p class="ind">1、服務時數 ${F(10)} 小時、每小時 ${F("5,000")} 元整，總計 ${F("5 萬")} 元整。</p>
+   <p class="ind">2、服務時數 ${F(20)} 小時、每小時 ${F("4,500")} 元整，總計 ${F("9 萬")} 元整。</p>
+   <p>二、服務範圍：${F("法律意見諮詢、法律文件審閱及修改、非訟書狀代撰、契約撰擬及協商等（依律所範本）","20em")}</p>
+   <p>三、服務時數當年度未用完，可累計至次一年度使用，${F("僅限延長一次")}。</p>
+   <p>四、超過時數部分，每小時以 ${F("4,500")} 元計算，按月請款。</p>
+   <p>五、如有其他需求，敬請與本所${F(a.owner+" 律師")}聯繫。</p>
+   <p>六、如蒙同意，敬請將選擇方案之服務費用匯入本所帳戶，並將同意書簽回。</p>
+   ${SEAL_AT}${dateLine()}
+   <hr style="margin:26px 0 14px;border:0;border-top:1px dashed #999">
+   <h3>同　意　函</h3>
+   <p>本公司茲同意貴所報價函所述　□ ${F(10)} 小時　□ ${F(20)} 小時　服務及計費方式，委託辦理各項事宜。</p>
+   <p style="margin-top:14px">此致　典範法律事務所</p>
+   <p style="text-align:right">${F(a.name,"10em")}　負責人 ${F("","6em")}</p></div>`;
+  docShell("報價單（法律顧問）","<span class='ref'>3-9</span><span class='ref'>5-5</span><span class='ref'>5-6</span>",paper,
+   `<p class="note">已帶入：客戶名稱、方案、承辦律師。內容照典範的法顧報價函，都可以改。</p>`, true);
+}
+
+render();
+</script>
+</body>
+</html>
