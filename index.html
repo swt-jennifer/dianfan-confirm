@@ -128,6 +128,13 @@ tr.click:hover td,tr.sel td{background:var(--accent-soft)}
 .final{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
 .final .btns{display:flex;flex-wrap:wrap;gap:8px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--navy);color:var(--navy-ink);padding:8px 16px;border-radius:8px;font-size:14px;z-index:20;max-width:90vw}
+.btn.send{font-size:16px;padding:10px 28px}
+.btn:disabled{opacity:.6;cursor:default}
+.sendmsg{border-radius:8px;padding:10px 12px;font-size:14px}
+.sendmsg.ok{background:var(--ok-soft);color:var(--ok)}
+.sendmsg.warn{background:var(--chg-soft);color:var(--chg)}
+.sendmsg.bad{background:var(--bad-soft);color:var(--bad)}
+.sendmsg .btns{margin-top:8px}
 pre.out{white-space:pre-wrap;background:var(--mock);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:13px;max-height:300px;overflow:auto}
 @media (max-width:980px){.sec-body{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:760px){
@@ -157,7 +164,7 @@ pre.out{white-space:pre-wrap;background:var(--mock);border:1px solid var(--line)
       <li>每一項看過後，按「<b>沒問題</b>」或「<b>要修改</b>」。</li>
       <li>要修改的話，可以直接按「改寫這一項」改文字，或在意見欄寫下想法。</li>
       <li>右邊的「畫面示意」是幫助理解用的草圖，可以點點看；<b>裡面的公司和數字都是範例</b>，不是真實資料。</li>
-      <li>全部看完後，到最下面按「下載回覆檔」或「複製回覆內容」，再傳給我們。</li>
+      <li>全部看完後，到最下面按「<b>送出</b>」就完成了。</li>
     </ol>
     <div class="who"><label for="who">填寫人：</label><input id="who" placeholder="例：蘇律師" style="width:180px"></div>
   </div>
@@ -171,6 +178,7 @@ pre.out{white-space:pre-wrap;background:var(--mock);border:1px solid var(--line)
 
 <script>
 const ROC = 115; // 2026 = 民國 115 年
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbw9IxmOW-J7M2_2GCyFJjod14fvT7Rwe1Q4vZ-Y0ltWlCp0bELJIRbsBsm9U1CX3xbMvA/exec"; // Google Apps Script 網頁應用程式網址（/exec 結尾）
 const COURTS = ["憲法法庭","司法院刑事補償法庭","司法院－訴願決定","最高法院","最高行政法院","懲戒法院－懲戒法庭","懲戒法院－職務法庭","臺灣高等法院","臺灣高等法院－訴願決定","臺北高等行政法院 高等庭","臺北高等行政法院 地方庭","臺中高等行政法院 高等庭","臺中高等行政法院 地方庭","高雄高等行政法院 高等庭","高雄高等行政法院 地方庭","智慧財產及商業法院","臺灣高等法院 臺中分院","臺灣高等法院 臺南分院","臺灣高等法院 高雄分院","臺灣高等法院 花蓮分院","臺灣臺北地方法院","臺灣士林地方法院","臺灣新北地方法院","臺灣宜蘭地方法院","臺灣基隆地方法院","臺灣桃園地方法院","臺灣新竹地方法院","臺灣苗栗地方法院","臺灣臺中地方法院","臺灣彰化地方法院","臺灣南投地方法院","臺灣雲林地方法院","臺灣嘉義地方法院","臺灣臺南地方法院","臺灣高雄地方法院","臺灣橋頭地方法院","臺灣花蓮地方法院","臺灣臺東地方法院","臺灣屏東地方法院","臺灣澎湖地方法院","福建高等法院金門分院","福建金門地方法院","福建連江地方法院","臺灣高雄少年及家事法院"];
 
 const SECTIONS = [
@@ -395,9 +403,10 @@ function render(){
    <label for="finalNote">還有沒提到、想補充的事情嗎？</label>
    <textarea id="finalNote" rows="3" placeholder="選填">${esc(ST.final)}</textarea>
    <div id="finalStat" class="note-s"></div>
-   <div class="btns"><button class="btn" id="dl">下載回覆檔</button><button class="btn ghost" id="cp">複製回覆內容</button><button class="btn ghost" id="pv">預覽回覆內容</button></div>
-   <pre class="out" id="out" hidden></pre>
-   <div class="note-s">填的內容只存在這台電腦的瀏覽器裡，我們看不到；請用上面的按鈕把回覆傳給我們。</div>
+   <div class="btns"><button class="btn send" id="send">送出</button></div>
+   <div id="sendMsg" class="sendmsg" role="status" hidden></div>
+   <div id="sendFail" hidden><div class="btns"><button class="btn ghost" id="cp">複製回覆內容</button></div><pre class="out" id="out" hidden></pre></div>
+   <div class="note-s">送出後如果還想改，改完再按一次「送出」就好，我們會以最後一次為準。</div>
   </div>
  </section>`;
  renderToc(); updOwner(); renderAdvList(); renderFee();
@@ -442,19 +451,31 @@ document.addEventListener("click",async e=>{
  const f=e.target.closest("[data-f]"); if(f){advF=f.dataset.f;document.querySelectorAll("#advFilter .chip").forEach(b=>b.setAttribute("aria-pressed",b===f));renderAdvList();return}
  const r=e.target.closest("tr.click"); if(r){advSel=+r.dataset.i;advPer=0;advQ="";renderAdvList();return}
  const fb=e.target.closest("[data-fee]"); if(fb){const row=FEE[+fb.dataset.fee];row[7]=FEE_ST[(FEE_ST.indexOf(row[7])+1)%FEE_ST.length];renderFee();return}
- if(e.target.id==="pv"){const o=document.getElementById("out");o.textContent=reply();o.hidden=!o.hidden;return}
- if(e.target.id==="cp"){const txt=reply();try{await navigator.clipboard.writeText(txt);toast("已複製，可以貼到 email 或 LINE 傳給我們")}catch(err){const o=document.getElementById("out");o.textContent=txt;o.hidden=false;const rg=document.createRange();rg.selectNodeContents(o);const sel=getSelection();sel.removeAllRanges();sel.addRange(rg);toast("沒辦法自動複製，內容已經選好，請按 Ctrl+C")}return}
- if(e.target.id==="dl"){
-  let dl=null; try{dl=await window.claude?.use?.("downloads")}catch(err){}
-  if(!dl){
-   if(window.claude){toast("這裡沒辦法下載，請改用「複製回覆內容」");return}
-   try{const url=URL.createObjectURL(new Blob([reply()],{type:"text/plain;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="典範需求確認回覆_2026-11-19.txt";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast("已下載回覆檔，請把檔案傳給我們")}
-   catch(err){toast("下載沒有成功，請改用「複製回覆內容」")}
-   return}
-  try{await dl.save({filename:"典範需求確認回覆_2026-11-19.md",data:reply()});toast("已下載回覆檔")}
-  catch(err){if(err&&err.code==="declined")return;toast("下載沒有成功，請改用「複製回覆內容」")}
- }
+ if(e.target.id==="cp"){const txt=reply();try{await navigator.clipboard.writeText(txt);toast("已複製，請貼到 LINE 傳給我們")}catch(err){const o=document.getElementById("out");o.textContent=txt;o.hidden=false;const rg=document.createRange();rg.selectNodeContents(o);const sel=getSelection();sel.removeAllRanges();sel.addRange(rg);toast("內容已經選好，請按「複製」")}return}
+ if(e.target.id==="send"||e.target.id==="sendAnyway"){send(e.target.id==="sendAnyway");return}
 });
+
+/* ---------- 送出到 Google 試算表 ---------- */
+function msg(cls,html){const m=document.getElementById("sendMsg");m.className="sendmsg "+cls;m.innerHTML=html;m.hidden=false}
+async function send(force){
+ const c=counts();
+ if(!ST.who.trim()){msg("warn","請先在最上面填「填寫人」的名字，我們才知道是誰的回覆。");const w=document.getElementById("who");w.scrollIntoView({block:"center"});w.focus();return}
+ if(!force&&c.done<c.total){msg("warn",`還有 ${c.total-c.done} 項沒有按「沒問題」或「要修改」。<div class="btns"><button class="btn" id="sendAnyway">仍要送出</button></div>`);return}
+ if(!ENDPOINT){msg("warn","送出功能還在設定中（這是預覽版）。");return}
+ const b=document.getElementById("send"); b.disabled=true; b.textContent="送出中…";
+ let n=0;
+ const payload={who:ST.who.trim(),final:ST.final||"",items:SECTIONS.flatMap(sec=>sec.items.map(([id,t])=>{n++;const s=it(id);return {no:n,sec:sec.title,text:t,edited:s.text||"",status:s.s==="ok"?"沒問題":s.s==="chg"?"要修改":"還沒看",note:s.note||""}}))};
+ try{
+  const r=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+  const t=await r.text();
+  if(!r.ok||t.trim()!=="ok") throw new Error(t);
+  document.getElementById("sendFail").hidden=true;
+  msg("ok",`已送出，謝謝！（${new Date().toLocaleString("zh-TW",{hour12:false})}）<br>之後想改，改完再按一次「送出」就好。`);
+ }catch(err){
+  msg("bad","送出沒有成功，可能是網路不穩。請稍後再按一次「送出」；還是不行的話，按下面的「複製回覆內容」，貼到 LINE 傳給我們。");
+  document.getElementById("sendFail").hidden=false;
+ }finally{b.disabled=false;b.textContent="送出"}
+}
 document.addEventListener("keydown",e=>{const r=e.target.closest&&e.target.closest("tr.click");if(r&&(e.key==="Enter"||e.key===" ")){e.preventDefault();r.click()}});
 document.addEventListener("input",e=>{
  const t=e.target;
